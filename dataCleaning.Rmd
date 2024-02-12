@@ -9,11 +9,21 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
 library(tidyverse)
 library(dplyr)
 library(readr)
+library(jsonlite)
 ```
+
+```{r}
+# Code to convert json to CSV
+
+# steam <- fromJSON("..\\data\\data_raw\\steam.jsonmdb", simplifyDataFrame = TRUE)
+# 
+# write.csv(steam, "..\\data\\data_clean\\steam.jsonmdb")
+```
+
 
 # Reading in Data
 ```{r}
