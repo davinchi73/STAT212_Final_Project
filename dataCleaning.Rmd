@@ -1,0 +1,28 @@
+---
+title: "Data cleaning"
+author: "Devinn Chi and Chris Lohmeier"
+date: "2024-02-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(readr)
+```
+
+# Reading in Data
+```{r}
+steamData <- read_csv("../data/data_clean/steam.csv")
+```
+
+# cleaning data
+```{r}
+steamDataClean <- steamData %>% 
+  select(-store_url, -store_promo_url, -...1, -image, -voiceovers, -achievements, -gfq_url, -gfq_difficulty_comment, -gfq_rating_comment, -gfq_length_comment, -stsp_owners, -stsp_mdntime, -hltb_url, -hltb_single, -hltb_complete, -meta_url, -igdb_url, -igdb_single, -igdb_complete, -published_meta, -published_hltb, -published_stsp, -published_igdb)
+```
+
