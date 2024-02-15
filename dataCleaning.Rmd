@@ -14,6 +14,7 @@ library(tidyverse)
 library(dplyr)
 library(readr)
 library(jsonlite)
+library(skimr)
 ```
 
 ```{r}
@@ -29,10 +30,53 @@ library(jsonlite)
 ```{r}
 steamData <- read_csv("../data/data_clean/steam.csv")
 ```
+# Overview of data
+```{r}
+skim(steamData)
+steamData %>% pull(platforms) %>% unique()
+```
+> Findings:
+1. Games limited to PC, Mac, and Linux
+2. Nearly 34,000 different developers!
+3. Data mostly complete aside from ratings - it would be good to see if this means that it is biased in any way
 
 # cleaning data
 ```{r}
 steamDataClean <- steamData %>% 
-  select(-store_url, -store_promo_url, -...1, -image, -voiceovers, -achievements, -gfq_url, -gfq_difficulty_comment, -gfq_rating_comment, -gfq_length_comment, -stsp_owners, -stsp_mdntime, -hltb_url, -hltb_single, -hltb_complete, -meta_url, -igdb_url, -igdb_single, -igdb_complete, -published_meta, -published_hltb, -published_stsp, -published_igdb)
+  select(-store_url, -store_promo_url, -...1, -image, -voiceovers, -achievements, -gfq_url, -gfq_difficulty_comment, -gfq_rating_comment, -gfq_length_comment, -stsp_owners, -stsp_mdntime, -hltb_url, -hltb_single, -hltb_complete, -meta_url, -igdb_url, -igdb_single, -igdb_complete, -published_meta, -published_hltb, -published_stsp, -published_igdb) %>% 
+  mutate(
+    full_price = full_price/100,
+    discount = discount/100,
+    current_price = current_price/100
+    ) %>% 
+  filter(full_price <= 200) # Only 2 games with full_price > 199.99
 ```
+
+# Data Exploration
+```{r}
+# Density plot of prices
+steamDataClean %>% 
+ggplot() +
+  geom_density(aes(x = full_price)) +
+  theme_classic()
+
+# Code for getting developer size
+steamDataDevelopers <- steamDataClean %>% 
+  group_by(developers) %>% 
+  mutate(developer_size = n())
+
+# This may not be a good measure for how well-reasourced a developer is - maybe sales data exists somewhere?
+steamDataDevelopers %>% 
+  group_by(developers) %>% 
+  summarize(developer_size = n()) %>% 
+  arrange(desc(developer_size))
+
+ggplot(steamDataDevelopers) +
+  geom_histogram(aes(x = developer_size))
+
+ggplot(steamDataDevelopers) +
+  geom_point(aes(x = developer_size, y = full_price))
+  
+```
+
 
