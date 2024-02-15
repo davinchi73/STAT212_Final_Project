@@ -1,0 +1,22 @@
+---
+title: "Data Read Test"
+author: "Devinn Chi and Chris Lohmeier"
+date: "2024-02-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(readr)
+```
+
+# Reading in Data
+```{r}
+steamData <- read_csv("../data/data_clean/steam.csv")
+```
+
