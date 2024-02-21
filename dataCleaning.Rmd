@@ -43,13 +43,15 @@ steamData %>% pull(platforms) %>% unique()
 # cleaning data
 ```{r}
 steamDataClean <- steamData %>% 
-  select(-store_url, -store_promo_url, -...1, -image, -voiceovers, -achievements, -gfq_url, -gfq_difficulty_comment, -gfq_rating_comment, -gfq_length_comment, -stsp_owners, -stsp_mdntime, -hltb_url, -hltb_single, -hltb_complete, -meta_url, -igdb_url, -igdb_single, -igdb_complete, -published_meta, -published_hltb, -published_stsp, -published_igdb) %>% 
-  mutate(
+  select(-store_url, -store_promo_url, -...1, -image, -voiceovers, -achievements, -gfq_url, -gfq_difficulty_comment, -gfq_rating_comment, -gfq_length_comment, -stsp_owners, -stsp_mdntime, -hltb_url, -hltb_single, -hltb_complete, -meta_url, -igdb_url, -igdb_single, -igdb_complete, -published_meta, -published_hltb, -published_stsp, -published_igdb)
+
+# unique(steamDataClean$full_price) # check occurances
+
+steamDataClean %>% mutate(
     full_price = full_price/100,
     discount = discount/100,
-    current_price = current_price/100
-    ) %>% 
-  filter(full_price <= 200) # Only 2 games with full_price > 199.99
+    current_price = current_price/100) %>% 
+    filter(full_price <= 200) # Only 2 games with full_price > 199.99
 ```
 
 # Data Exploration
