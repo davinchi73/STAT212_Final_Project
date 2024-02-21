@@ -15,6 +15,7 @@ library(dplyr)
 library(readr)
 library(jsonlite)
 library(skimr)
+library(lubridate)
 ```
 
 ```{r}
@@ -85,6 +86,22 @@ ggplot(steamDataDevelopers) +
 
 # Chris's Chunk
 ```{r}
+ggplot(steamDataClean) + 
+  geom_boxplot(aes(x = platforms, y = full_price)) + 
+  scale_y_continuous(limits = c(0, 50))
 
+steamDataClean %>%  
+  mutate(published_store = ymd(published_store)) %>%
+  mutate(year = year(published_store)) %>% 
+  group_by(year) %>% 
+  summarize(avg_price = mean(full_price)) %>%
+  ggplot() +
+    geom_bar(aes(x = year, y = avg_price), stat = "identity")
+
+steamDataClean %>%  
+  mutate(published_store = ymd(published_store)) %>%
+  mutate(year = year(published_store)) %>% 
+  ggplot() +
+    geom_boxplot(aes(x = year, y = full_price, group = year))
 ```
 
