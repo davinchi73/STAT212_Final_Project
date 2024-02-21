@@ -79,7 +79,31 @@ ggplot(steamDataDevelopers) +
 ```
 
 # Devinn's Chunk
-```{r}
+```{r, fig.width = 15}
+# Price to popularity
+steamDataPricetoPop <- steamDataClean %>% 
+  select(full_price, igdb_popularity, genres) %>% 
+  filter(full_price <= 70, genres %in% c("Adventure", "Casual", "Action", "Racing", "Indie", "RPG", "Simulation", "Strategy"))
+
+  ggplot(steamDataPricetoPop) + 
+  geom_point(aes(x = full_price, y = igdb_popularity)) + 
+  stat_smooth(aes(x = full_price, y = igdb_popularity), method = "lm", se = TRUE) +
+  facet_wrap(~genres, scales = 'free') + 
+  labs(Title = "Price to Popularity", x = "Price", y = "Popularity (IGDB)") +
+  theme_classic()
+
+
+# Genre to price
+steamDataGenretoPrice <- steamDataClean %>% 
+  select(full_price, genres) %>% 
+  filter(full_price <= 70, genres %in% c("Adventure", "Casual", "Action", "Racing", "Indie", "RPG", "Simulation", "Strategy")) %>% 
+  group_by(genres) %>% 
+  summarize(average_price = mean(full_price))
+
+  ggplot(steamDataGenretoPrice) +
+    geom_bar(aes(x = genres, y = average_price), stat = "identity") +
+    labs(title = "Average Price per Genre", x = "Genre", y = "Average Price") +
+  theme_classic()
 
 ```
 
