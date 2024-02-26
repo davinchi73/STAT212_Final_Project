@@ -16,6 +16,7 @@ library(readr)
 library(jsonlite)
 library(skimr)
 library(lubridate)
+library(ggpubr)
 ```
 
 ```{r}
@@ -59,15 +60,15 @@ steamDataGenres <- steamDataClean %>%
   unnest() %>% 
   pivot_wider(names_from = genres, values_from = genres)
 
-steamDataTags <- steamDataClean %>% 
-  mutate(tags = str_split(tags, ",")) %>% 
-  unnest() %>% 
-  pivot_wider(names_from = tags, values_from = tags)
-
-steamDataCategories <- steamDataClean %>% 
-  mutate(categories = str_split(categories, ",")) %>% 
-  unnest() %>% 
-  pivot_wider(names_from = categories, values_from = categories)
+# steamDataTags <- steamDataClean %>% 
+#   mutate(tags = str_split(tags, ",")) %>% 
+#   unnest() %>% 
+#   pivot_wider(names_from = tags, values_from = tags)
+# 
+# steamDataCategories <- steamDataClean %>% 
+#   mutate(categories = str_split(categories, ",")) %>% 
+#   unnest() %>% 
+#   pivot_wider(names_from = categories, values_from = categories)
 
 # Does not work :(
 # genres <- names(steamDataWide)[23:39]
@@ -145,13 +146,17 @@ makPtoGPlot <- function(xlab, ylab, title, genreVar, data) {
   theme_classic()
 }
 
-makPtoGPlot("Price", "Popularity", "Adventure Games, Price to Popularity", "Adventure", steamDataGenres)
-makPtoGPlot("Price", "Popularity", "Casual Games, Price to Popularity", "Casual", steamDataGenres)
-makPtoGPlot("Price", "Popularity", "Action Games, Price to Popularity", "Action", steamDataGenres)
-makPtoGPlot("Price", "Popularity", "Racing Games, Price to Popularity", "Racing", steamDataGenres)
-makPtoGPlot("Price", "Popularity", "Indie Games, Price to Popularity", "Indie", steamDataGenres)
-makPtoGPlot("Price", "Popularity", "RPG Games, Price to Popularity", "RPG", steamDataGenres)
-makPtoGPlot("Price", "Popularity", "Simulation Games, Price to Popularity", "Simulation", steamDataGenres)
+adv_plot <- makPtoGPlot("Price", "Popularity", "Adventure Games, Price to Popularity", "Adventure", steamDataGenres)
+cas_plot <- makPtoGPlot("Price", "Popularity", "Casual Games, Price to Popularity", "Casual", steamDataGenres)
+act_plot <- makPtoGPlot("Price", "Popularity", "Action Games, Price to Popularity", "Action", steamDataGenres)
+rac_plot <- makPtoGPlot("Price", "Popularity", "Racing Games, Price to Popularity", "Racing", steamDataGenres)
+ind_plot <- makPtoGPlot("Price", "Popularity", "Indie Games, Price to Popularity", "Indie", steamDataGenres)
+RPG_plot <- makPtoGPlot("Price", "Popularity", "RPG Games, Price to Popularity", "RPG", steamDataGenres)
+sim_plot <- makPtoGPlot("Price", "Popularity", "Simulation Games, Price to Popularity", "Simulation", steamDataGenres)
+
+ggarrange(adv_plot, cas_plot, act_plot, rac_plot, ind_plot, RPG_plot, sim_plot, 
+          ncol = 3, nrow = 3, common.legend = TRUE, labels = c("Adventure", "Casual", "Action", "Racing", "Indie", "RPG", "Simulation"), 
+          title = "Price to Popularity by Genre")
 ```
 
 # Chris's Chunk
