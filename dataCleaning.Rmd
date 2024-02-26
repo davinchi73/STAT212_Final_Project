@@ -145,13 +145,13 @@ makPtoGPlot <- function(xlab, ylab, title, genreVar, data) {
   theme_classic()
 }
 
-makPtoGPlot("Price", "Popularity", "Adventure Games, Price to Popularity", "Adventure", steamDataWide)
-makPtoGPlot("Price", "Popularity", "Casual Games, Price to Popularity", "Casual", steamDataWide)
-makPtoGPlot("Price", "Popularity", "Action Games, Price to Popularity", "Action", steamDataWide)
-makPtoGPlot("Price", "Popularity", "Racing Games, Price to Popularity", "Racing", steamDataWide)
-makPtoGPlot("Price", "Popularity", "Indie Games, Price to Popularity", "Indie", steamDataWide)
-makPtoGPlot("Price", "Popularity", "RPG Games, Price to Popularity", "RPG", steamDataWide)
-makPtoGPlot("Price", "Popularity", "Simulation Games, Price to Popularity", "Simulation", steamDataWide)
+makPtoGPlot("Price", "Popularity", "Adventure Games, Price to Popularity", "Adventure", steamDataGenres)
+makPtoGPlot("Price", "Popularity", "Casual Games, Price to Popularity", "Casual", steamDataGenres)
+makPtoGPlot("Price", "Popularity", "Action Games, Price to Popularity", "Action", steamDataGenres)
+makPtoGPlot("Price", "Popularity", "Racing Games, Price to Popularity", "Racing", steamDataGenres)
+makPtoGPlot("Price", "Popularity", "Indie Games, Price to Popularity", "Indie", steamDataGenres)
+makPtoGPlot("Price", "Popularity", "RPG Games, Price to Popularity", "RPG", steamDataGenres)
+makPtoGPlot("Price", "Popularity", "Simulation Games, Price to Popularity", "Simulation", steamDataGenres)
 ```
 
 # Chris's Chunk
