@@ -156,3 +156,7 @@ steamDataClean %>%
     geom_boxplot(aes(x = year, y = full_price, group = year))
 ```
 
+```{r}
+sessionInfo()
+```
+
