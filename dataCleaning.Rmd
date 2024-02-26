@@ -59,6 +59,7 @@ steamDataWide <- steamDataClean %>%
   unnest() %>% 
   pivot_wider(names_from = genres, values_from = genres)
 
+# Does not work :(
 genres <- names(steamDataWide)[23:39]
 for(n in genres) {
   steamDataWide <- steamDataWide %>% 
