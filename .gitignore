@@ -8,3 +8,4 @@ data/
 .Rproj.user
 *.Rproj
 .quarto/
+.gitignore.
