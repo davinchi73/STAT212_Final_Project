@@ -54,10 +54,20 @@ steamDataClean <- steamData %>%
 
 # Wider dataset
 ```{r}
-steamDataWide <- steamDataClean %>% 
+steamDataGenres <- steamDataClean %>% 
   mutate(genres = str_split(genres, ",")) %>% 
   unnest() %>% 
   pivot_wider(names_from = genres, values_from = genres)
+
+steamDataTags <- steamDataClean %>% 
+  mutate(tags = str_split(tags, ",")) %>% 
+  unnest() %>% 
+  pivot_wider(names_from = tags, values_from = tags)
+
+steamDataCategories <- steamDataClean %>% 
+  mutate(categories = str_split(categories, ",")) %>% 
+  unnest() %>% 
+  pivot_wider(names_from = categories, values_from = categories)
 
 # Does not work :(
 # genres <- names(steamDataWide)[23:39]
@@ -163,5 +173,9 @@ steamDataClean %>%
   mutate(year = year(published_store)) %>% 
   ggplot() +
     geom_boxplot(aes(x = year, y = full_price, group = year))
+```
+
+```{r}
+sessionInfo()
 ```
 

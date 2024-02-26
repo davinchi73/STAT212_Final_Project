@@ -20,3 +20,7 @@ library(readr)
 steamData <- read_csv("../data/data_clean/steam.csv")
 ```
 
+```{r}
+sessionInfo()
+```
+
