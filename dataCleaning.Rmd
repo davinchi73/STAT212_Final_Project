@@ -52,6 +52,22 @@ steamDataClean <- steamData %>%
     filter(full_price <= 200) # Only 2 games with full_price > 199.99
 ```
 
+# Wider dataset
+```{r}
+steamDataWide <- steamDataClean %>% 
+  mutate(genres = str_split(genres, ",")) %>% 
+  unnest() %>% 
+  pivot_wider(names_from = genres, values_from = genres)
+
+genres <- names(steamDataWide)[23:39]
+for(n in genres) {
+  steamDataWide <- steamDataWide %>% 
+    mutate(genres[n] <-  !is.na(genres[n]))
+} 
+  
+```
+
+
 # Data Exploration
 ```{r}
 # Density plot of prices
