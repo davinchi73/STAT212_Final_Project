@@ -17,6 +17,7 @@ library(jsonlite)
 library(skimr)
 library(lubridate)
 library(ggpubr)
+library(cowplot)
 ```
 
 ```{r}
@@ -108,30 +109,13 @@ ggplot(steamDataDevelopers) +
 
 # Devinn's Chunk
 ```{r, fig.width = 15}
-# Price to popularity
-# steamDataPricetoPop <- steamDataClean %>% 
-#   select(full_price, igdb_popularity, genres) %>% 
-#   filter(full_price <= 70, genres %in% c("Adventure", "Casual", "Action", "Racing", "Indie", "RPG", "Simulation", "Strategy"))
-# 
-#   ggplot(steamDataPricetoPop) + 
-#   geom_point(aes(x = full_price, y = igdb_popularity)) + 
-#   stat_smooth(aes(x = full_price, y = igdb_popularity), method = "lm", se = TRUE) +
-#   facet_wrap(~genres, scales = 'free') + 
-#   labs(Title = "Price to Popularity", x = "Price", y = "Popularity (IGDB)") +
-#   theme_classic()
-# 
-# 
-# # Genre to price
-# steamDataGenretoPrice <- steamDataClean %>% 
-#   select(full_price, genres) %>% 
-#   filter(full_price <= 70, genres %in% c("Adventure", "Casual", "Action", "Racing", "Indie", "RPG", "Simulation", "Strategy")) %>% 
-#   group_by(genres) %>% 
-#   summarize(average_price = mean(full_price))
-# 
-#   ggplot(steamDataGenretoPrice) +
-#     geom_bar(aes(x = genres, y = average_price), stat = "identity") +
-#     labs(title = "Average Price per Genre", x = "Genre", y = "Average Price") +
-#   theme_classic()
+customTheme <- theme_minimal() +
+  theme(
+    text = element_text(size = 12),
+    plot.title = element_text(face = "bold", size = 12),
+    axis.title = element_text(face = "bold"),
+    legend.position = "bottom"
+  )
 
 makPtoGPlot <- function(xlab, ylab, titl, genreVar, popularityVar, data) {
   cleanData <- data %>% 
@@ -141,48 +125,66 @@ makPtoGPlot <- function(xlab, ylab, titl, genreVar, popularityVar, data) {
   ggplot(cleanData) + 
   geom_point(aes(x = full_price, y = !!sym(popularityVar))) +
   stat_smooth(aes(x = full_price, y = !!sym(popularityVar)), method = "lm", se = TRUE) +
-  labs(Title = title, x = xlab, y = ylab) + 
-  theme_classic()
+  labs(title = titl, x = xlab, y = ylab) + 
+  customTheme
 }
 
-# IGDB popularity
-adv_plot <- makPtoGPlot("Price", "Popularity", "Adventure Games, Price to Popularity", "Adventure", "igdb_popularity", steamDataGenres)
-cas_plot <- makPtoGPlot("Price", "Popularity", "Casual Games, Price to Popularity", "Casual", "igdb_popularity", steamDataGenres)
-act_plot <- makPtoGPlot("Price", "Popularity", "Action Games, Price to Popularity", "Action", "igdb_popularity", steamDataGenres)
-rac_plot <- makPtoGPlot("Price", "Popularity", "Racing Games, Price to Popularity", "Racing",  "igdb_popularity",steamDataGenres)
-ind_plot <- makPtoGPlot("Price", "Popularity", "Indie Games, Price to Popularity", "Indie",  "igdb_popularity",steamDataGenres)
-RPG_plot <- makPtoGPlot("Price", "Popularity", "RPG Games, Price to Popularity", "RPG",  "igdb_popularity",steamDataGenres)
-sim_plot <- makPtoGPlot("Price", "Popularity", "Simulation Games, Price to Popularity", "Simulation", "igdb_popularity", steamDataGenres)
 
-ggarrange(adv_plot, cas_plot, act_plot, rac_plot, ind_plot, RPG_plot, sim_plot, 
-          ncol = 3, nrow = 3, common.legend = TRUE, labels = c("Adventure", "Casual", "Action", "Racing", "Indie", "RPG", "Simulation"), 
-          title = "Price to Popularity by Genre (IGDB)")
+
+# IGDB popularity
+adv_plot <- makPtoGPlot("Price", "Popularity", "Adventure", "Adventure", "igdb_uscore", steamDataGenres)
+cas_plot <- makPtoGPlot("Price", "Popularity", "Casual", "Casual", "igdb_uscore", steamDataGenres)
+act_plot <- makPtoGPlot("Price", "Popularity", "Action", "Action", "igdb_uscore", steamDataGenres)
+rac_plot <- makPtoGPlot("Price", "Popularity", "Racing", "Racing",  "igdb_uscore",steamDataGenres)
+ind_plot <- makPtoGPlot("Price", "Popularity", "Indie", "Indie",  "igdb_uscore",steamDataGenres)
+RPG_plot <- makPtoGPlot("Price", "Popularity", "RPG", "RPG",  "igdb_uscore",steamDataGenres)
+sim_plot <- makPtoGPlot("Price", "Popularity", "Simulation", "Simulation", "igdb_uscore", steamDataGenres)
+
+IGDBplot <- ggarrange(adv_plot, cas_plot, act_plot, rac_plot, ind_plot, RPG_plot, sim_plot, 
+          ncol = 3, nrow = 3, common.legend = TRUE) 
+
+plot_title <- ggdraw() +
+  draw_label("Price to Popularity by Genre (IGDB)", fontface = 'bold', size = 14)
+
+ggarrange(plot_title, IGDBplot, nrow = 2, rel_heights = c(0.1, 0.9), heights = c(0.1, 0.9))
+
+
 
 # Steam UScore 
-adv_plotS <- makPtoGPlot("Price", "Popularity", "Adventure Games, Price to Popularity", "Adventure", "store_uscore", steamDataGenres)
-cas_plotS <- makPtoGPlot("Price", "Popularity", "Casual Games, Price to Popularity", "Casual", "store_uscore", steamDataGenres)
-act_plotS <- makPtoGPlot("Price", "Popularity", "Action Games, Price to Popularity", "Action", "store_uscore", steamDataGenres)
-rac_plotS <- makPtoGPlot("Price", "Popularity", "Racing Games, Price to Popularity", "Racing",  "store_uscore",steamDataGenres)
-ind_plotS <- makPtoGPlot("Price", "Popularity", "Indie Games, Price to Popularity", "Indie",  "store_uscore",steamDataGenres)
-RPG_plotS <- makPtoGPlot("Price", "Popularity", "RPG Games, Price to Popularity", "RPG",  "store_uscore",steamDataGenres)
-sim_plotS <- makPtoGPlot("Price", "Popularity", "Simulation Games, Price to Popularity", "Simulation", "store_uscore", steamDataGenres)
+adv_plotS <- makPtoGPlot("Price", "Popularity", "Adventure", "Adventure", "store_uscore", steamDataGenres)
+cas_plotS <- makPtoGPlot("Price", "Popularity", "Casual", "Casual", "store_uscore", steamDataGenres)
+act_plotS <- makPtoGPlot("Price", "Popularity", "Action", "Action", "store_uscore", steamDataGenres)
+rac_plotS <- makPtoGPlot("Price", "Popularity", "Racing", "Racing",  "store_uscore",steamDataGenres)
+ind_plotS <- makPtoGPlot("Price", "Popularity", "Indie", "Indie",  "store_uscore",steamDataGenres)
+RPG_plotS <- makPtoGPlot("Price", "Popularity", "RPG", "RPG",  "store_uscore",steamDataGenres)
+sim_plotS <- makPtoGPlot("Price", "Popularity", "Simulation", "Simulation", "store_uscore", steamDataGenres)
 
-ggarrange(adv_plotS, cas_plotS, act_plotS, rac_plotS, ind_plotS, RPG_plotS, sim_plotS, 
-          ncol = 3, nrow = 3, common.legend = TRUE, labels = c("Adventure", "Casual", "Action", "Racing", "Indie", "RPG", "Simulation"), 
-          title = "Price to Popularity by Genre (Steam User Score)")
+steamPlot <- ggarrange(adv_plotS, cas_plotS, act_plotS, rac_plotS, ind_plotS, RPG_plotS, sim_plotS, 
+          ncol = 3, nrow = 3, common.legend = TRUE)
+
+plot_titles <- ggdraw() +
+  draw_label("Price to Popularity by Genre (Steam User Score)", fontface = 'bold', size = 14)
+
+ggarrange(plot_titles, steamPlot, nrow = 2, rel_heights = c(0.1, 0.9), heights = c(0.1, 0.9))
+
+
 
 # Metacritic User Score
-adv_plotM <- makPtoGPlot("Price", "Popularity", "Adventure Games, Price to Popularity", "Adventure", "meta_uscore", steamDataGenres)
-cas_plotM <- makPtoGPlot("Price", "Popularity", "Casual Games, Price to Popularity", "Casual", "meta_uscore", steamDataGenres)
-act_plotM <- makPtoGPlot("Price", "Popularity", "Action Games, Price to Popularity", "Action", "meta_uscore", steamDataGenres)
-rac_plotM <- makPtoGPlot("Price", "Popularity", "Racing Games, Price to Popularity", "Racing",  "meta_uscore",steamDataGenres)
-ind_plotM <- makPtoGPlot("Price", "Popularity", "Indie Games, Price to Popularity", "Indie",  "meta_uscore",steamDataGenres)
-RPG_plotM <- makPtoGPlot("Price", "Popularity", "RPG Games, Price to Popularity", "RPG",  "meta_uscore",steamDataGenres)
-sim_plotM <- makPtoGPlot("Price", "Popularity", "Simulation Games, Price to Popularity", "Simulation", "meta_uscore", steamDataGenres)
+adv_plotM <- makPtoGPlot("Price", "Popularity", "Adventure", "Adventure", "meta_uscore", steamDataGenres)
+cas_plotM <- makPtoGPlot("Price", "Popularity", "Casual", "Casual", "meta_uscore", steamDataGenres)
+act_plotM <- makPtoGPlot("Price", "Popularity", "Action", "Action", "meta_uscore", steamDataGenres)
+rac_plotM <- makPtoGPlot("Price", "Popularity", "Racing", "Racing",  "meta_uscore",steamDataGenres)
+ind_plotM <- makPtoGPlot("Price", "Popularity", "Indie", "Indie",  "meta_uscore",steamDataGenres)
+RPG_plotM <- makPtoGPlot("Price", "Popularity", "RPG", "RPG",  "meta_uscore",steamDataGenres)
+sim_plotM <- makPtoGPlot("Price", "Popularity", "Simulation", "Simulation", "meta_uscore", steamDataGenres)
 
-ggarrange(adv_plotM, cas_plotM, act_plotM, rac_plotM, ind_plotM, RPG_plotM, sim_plotM, 
-          ncol = 3, nrow = 3, common.legend = TRUE, labels = c("Adventure", "Casual", "Action", "Racing", "Indie", "RPG", "Simulation"), 
-          title = "Price to Popularity by Genre (MetaCritic User Score)")
+MetacriticPlot <- ggarrange(adv_plotM, cas_plotM, act_plotM, rac_plotM, ind_plotM, RPG_plotM, sim_plotM, 
+          ncol = 3, nrow = 3, common.legend = TRUE)
+
+plot_titlem <- ggdraw() +
+  draw_label("Price to Popularity by Genre (MetaCritic User Score)", fontface = 'bold', size = 14)
+
+ggarrange(plot_titlem, MetacriticPlot, nrow = 2, rel_heights = c(0.1, 0.9), heights = c(0.1, 0.9))
 ```
 
 # Chris's Chunk
