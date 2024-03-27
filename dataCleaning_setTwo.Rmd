@@ -1,0 +1,70 @@
+---
+title: "Data cleaning, set Two"
+author: "Devinn Chi and Chris Lohmeier"
+date: "2024-03-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning = FALSE, message = FALSE}
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(jsonlite)
+library(skimr)
+library(lubridate)
+library(ggpubr)
+```
+
+
+# Reading in kaggle steam dataset
+```{r}
+KsteamData <- read_csv("../data/data_raw/steam_games.csv")
+```
+
+# Overview of data
+```{r}
+skim(KsteamData)
+KsteamData %>% pull(platforms) %>% unique()
+```
+
+
+#DEVINN CODE STARTS -----------------------------------------------------------------------------------------------------------------------
+
+# cleaning - removing unwanted variables
+```{r}
+KsteamDataClean <- KsteamData %>% 
+  select(-desc_snippet, -url, -recommended_requirements, -minimum_requirements, -game_description, -game_details, -popular_tags) %>% 
+  filter(original_price <= 100)
+```
+
+# cleaning - removing long values from reviews
+```{r}
+KsteamDataClean$recent_reviews <- 
+  str_extract(KsteamDataClean$recent_reviews, "(?i)Overwhelmingly Positive|Very Positive|Positive|Mostly Positive|Mixed|Mostly Negative|Negative|Very Negative|Overwhelmingly Negative")
+
+KsteamDataClean$all_reviews <- 
+  str_extract(KsteamDataClean$all_reviews, "(?i)Overwhelmingly Positive|Very Positive|Positive|Mostly Positive|Mixed|Mostly Negative|Negative|Very Negative|Overwhelmingly Negative")
+```
+
+# cleaning - removing na values from reviews
+```{r}
+KsteamDataClean <- KsteamDataClean %>%
+  filter(!is.na(recent_reviews) == TRUE)
+
+KsteamDataClean <- KsteamDataClean %>%
+  filter(!is.na(all_reviews) == TRUE)
+```
+
+# @Chris, removing the NA values from the reviews columns leaves us with like a little over 2000 cases, which I find kinda strange but whateva
+
+#DEVINN CODE ENDS  ------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
