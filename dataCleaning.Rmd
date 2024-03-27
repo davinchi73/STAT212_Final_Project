@@ -104,7 +104,6 @@ ggplot(steamDataDevelopers) +
 
 ggplot(steamDataDevelopers) +
   geom_point(aes(x = developer_size, y = full_price))
-  
 ```
 
 # Devinn's Chunk
@@ -205,6 +204,20 @@ steamDataClean %>%
   mutate(year = year(published_store)) %>% 
   ggplot() +
     geom_boxplot(aes(x = year, y = full_price, group = year))
+
+
+# Code for getting developer size
+steamDataDevelopers <- steamDataClean %>% 
+  group_by(developers) %>% 
+  mutate(developer_size = n()) %>% 
+  ungroup() %>% 
+  mutate(size_cat = cut(developer_size, breaks = 2))
+
+steamDataDevelopers %>% 
+  group_by(size_cat) %>% 
+  summarize(mean = mean(full_price)) %>% 
+ggplot() +
+  geom_bar(aes(y = mean, x = size_cat), stat = "identity")
 ```
 
 ```{r}
