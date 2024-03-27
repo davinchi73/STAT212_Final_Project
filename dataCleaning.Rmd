@@ -133,13 +133,13 @@ makPtoGPlot <- function(xlab, ylab, titl, genreVar, popularityVar, data) {
 
 
 # IGDB popularity
-adv_plot <- makPtoGPlot("Price", "Popularity", "Adventure", "Adventure", "igdb_popularity", steamDataGenres)
-cas_plot <- makPtoGPlot("Price", "Popularity", "Casual", "Casual", "igdb_popularity", steamDataGenres)
-act_plot <- makPtoGPlot("Price", "Popularity", "Action", "Action", "igdb_popularity", steamDataGenres)
-rac_plot <- makPtoGPlot("Price", "Popularity", "Racing", "Racing",  "igdb_popularity",steamDataGenres)
-ind_plot <- makPtoGPlot("Price", "Popularity", "Indie", "Indie",  "igdb_popularity",steamDataGenres)
-RPG_plot <- makPtoGPlot("Price", "Popularity", "RPG", "RPG",  "igdb_popularity",steamDataGenres)
-sim_plot <- makPtoGPlot("Price", "Popularity", "Simulation", "Simulation", "igdb_popularity", steamDataGenres)
+adv_plot <- makPtoGPlot("Price", "Popularity", "Adventure", "Adventure", "igdb_uscore", steamDataGenres)
+cas_plot <- makPtoGPlot("Price", "Popularity", "Casual", "Casual", "igdb_uscore", steamDataGenres)
+act_plot <- makPtoGPlot("Price", "Popularity", "Action", "Action", "igdb_uscore", steamDataGenres)
+rac_plot <- makPtoGPlot("Price", "Popularity", "Racing", "Racing",  "igdb_uscore",steamDataGenres)
+ind_plot <- makPtoGPlot("Price", "Popularity", "Indie", "Indie",  "igdb_uscore",steamDataGenres)
+RPG_plot <- makPtoGPlot("Price", "Popularity", "RPG", "RPG",  "igdb_uscore",steamDataGenres)
+sim_plot <- makPtoGPlot("Price", "Popularity", "Simulation", "Simulation", "igdb_uscore", steamDataGenres)
 
 IGDBplot <- ggarrange(adv_plot, cas_plot, act_plot, rac_plot, ind_plot, RPG_plot, sim_plot, 
           ncol = 3, nrow = 3, common.legend = TRUE) 
