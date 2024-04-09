@@ -18,6 +18,7 @@ library(skimr)
 library(lubridate)
 library(ggpubr)
 library(cowplot)
+library(broom)
 ```
 
 ```{r}
@@ -104,7 +105,10 @@ ggplot(steamDataDevelopers) +
   geom_histogram(aes(x = developer_size))
 
 ggplot(steamDataDevelopers) +
-  geom_point(aes(x = developer_size, y = full_price))
+  geom_point(aes(x = developer_size, y = full_price)) +
+  geom_smooth(aes(x = developer_size, y = full_price), method = "lm", se = FALSE) +
+  theme_classic() +
+  labs(y = "Price", x = "Developer Size")
 ```
 
 # Devinn's Chunk
@@ -221,6 +225,53 @@ steamDataDevelopers %>%
 ggplot() +
   geom_bar(aes(y = mean, x = size_cat), stat = "identity")
 ```
+
+# Correlation visualization (Chris)
+```{r}
+genre_stats <- function(metric, source, genre) {
+  data <- steamDataGenres %>%
+    filter({{ genre }} == {{ genre }}) %>%
+    drop_na({{ genre }}, {{ source}}, {{ metric }}) %>% 
+    select({{ source }}, {{ metric }})
+  
+  mod <- lm(as.formula(str_c(metric, " ~ ", source)), data)
+  
+  stats <- list(
+    genre = genre,
+    source = source,
+    coef = coef(mod)[2],
+    max = confint(mod)[1],
+    min = confint(mod)[2],
+    cor = cor(data)[1, 2]
+  )
+  
+  return(stats)
+}
+
+# Test case
+genre_stats("full_price", "igdb_score", "Action")
+
+genres <- c("Action", "Adventure", "Casual", "Racing", "Indie", "RPG", "Simulation")
+sources <- c("igdb_uscore", "meta_uscore", "store_uscore")
+inputs <- expand_grid(genres, sources)
+
+pop_price_genre <- map2(inputs$sources, inputs$genres, genre_stats, metric = "full_price") %>% 
+  bind_rows()
+
+# Determines the order of genres based on average cor
+pop_price_genre %>% 
+  group_by(genre) %>% 
+  summarize(avg = mean(cor)) %>% 
+  arrange(avg)
+
+pop_price_genre %>% 
+  mutate(genre = factor(genre, levels = c("Racing", "Adventure", "Casual", "Indie", "RPG", "Action", "Simulation"))) %>% 
+  ggplot() +
+    geom_bar(aes(x = genre, y = cor, fill = source), position = "dodge", stat = "identity") +
+    #geom_errorbar(aes(x = genre, ymin = min, ymax = max)) +
+    theme_classic()
+```
+
 
 ```{r}
 sessionInfo()
