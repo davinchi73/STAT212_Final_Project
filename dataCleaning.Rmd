@@ -230,9 +230,9 @@ ggplot() +
 ```{r}
 genre_stats <- function(metric, source, genre) {
   data <- steamDataGenres %>%
-    filter({{ genre }} == {{ genre }}) %>%
-    drop_na({{ genre }}, {{ source}}, {{ metric }}) %>% 
-    select({{ source }}, {{ metric }})
+    filter(genre == genre) %>%
+    drop_na(any_of(c(genre, source, metric))) %>% 
+    select(any_of(c(source, metric)))
   
   mod <- lm(as.formula(str_c(metric, " ~ ", source)), data)
   
@@ -240,9 +240,9 @@ genre_stats <- function(metric, source, genre) {
     genre = genre,
     source = source,
     coef = coef(mod)[2],
-    max = confint(mod)[1],
-    min = confint(mod)[2],
-    cor = cor(data)[1, 2]
+    max = confint(mod)[source, "97.5 %"],
+    min = confint(mod)[source, "2.5 %"],
+    cor = cor(data)[source, metric]
   )
   
   return(stats)
@@ -267,8 +267,8 @@ pop_price_genre %>%
 pop_price_genre %>% 
   mutate(genre = factor(genre, levels = c("Racing", "Adventure", "Casual", "Indie", "RPG", "Action", "Simulation"))) %>% 
   ggplot() +
-    geom_bar(aes(x = genre, y = cor, fill = source), position = "dodge", stat = "identity") +
-    #geom_errorbar(aes(x = genre, ymin = min, ymax = max)) +
+    geom_bar(aes(x = genre, y = coef, fill = source, color = source), position = "dodge", alpha = 0.5, stat = "identity") +
+    geom_errorbar(aes(x = genre, ymin = min, ymax = max, color = source), position = "dodge") +
     theme_classic()
 ```
 
