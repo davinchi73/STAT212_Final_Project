@@ -37,8 +37,7 @@ KsteamData %>% pull(platforms) %>% unique()
 # cleaning - removing unwanted variables
 ```{r}
 KsteamDataClean <- KsteamData %>% 
-  select(-desc_snippet, -url, -recommended_requirements, -minimum_requirements, -game_description, -game_details, -popular_tags) %>% 
-  filter(original_price <= 100)
+  select(-desc_snippet, -url, -recommended_requirements, -minimum_requirements, -game_description, -game_details, -popular_tags)
 ```
 
 # cleaning - removing long values from reviews
@@ -62,7 +61,22 @@ KsteamDataClean <- KsteamDataClean %>%
 # cleaning - changing prices to numeric values (TODO)
 ```{r}
 KsteamDataClean <- KsteamDataClean %>% 
-  mutate(original_price = ifelse(str_detect(original_price, "Free"), 0, str_extract_all(original_price, "\\.|[:digit:]")))
+  mutate(original_price = ifelse(str_detect(original_price, "Free"), 0, as.numeric(str_replace_all(original_price, "[^0-9.]+", ""))))
+```
+# vizualizations
+```{r}
+achievementsPrice <- ggplot(KsteamDataClean) +
+  geom_point(aes(x = achievements, y = original_price)) +
+  theme_classic() +
+  lims(x = c(0, 100))
+  
+# run to show graph
+# achievementsPrice
+
+# No correlation between price and number of achievements
+
+
+
 ```
 
 
