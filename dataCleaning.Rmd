@@ -55,6 +55,12 @@ steamDataClean <- steamData %>%
     filter(full_price <= 200) # Only 2 games with full_price > 199.99
 ```
 
+# write this data to csv
+```{r}
+# write.csv(steamDataClean, file = "../data/data_clean/steamDataClean.csv", row.names = FALSE)
+```
+
+
 # Wider dataset
 ```{r}
 steamDataGenres <- steamDataClean %>% 
@@ -81,6 +87,10 @@ steamDataGenres <- steamDataClean %>%
   
 ```
 
+# wider data csv
+```{r}
+# write.csv(steamDataGenres, file = "../data/data_clean/steamDataGenres.csv", row.names = FALSE)
+```
 
 # Data Exploration
 ```{r}
@@ -110,6 +120,7 @@ ggplot(steamDataDevelopers) +
   theme_classic() +
   labs(y = "Price", x = "Developer Size")
 ```
+
 
 # Devinn's Chunk
 ```{r, fig.width = 15}
@@ -191,6 +202,8 @@ plot_titlem <- ggdraw() +
 ggarrange(plot_titlem, MetacriticPlot, nrow = 2, rel_heights = c(0.1, 0.9), heights = c(0.1, 0.9))
 ```
 
+
+
 # Chris's Chunk
 ```{r}
 ggplot(steamDataClean) + 
@@ -225,6 +238,12 @@ steamDataDevelopers %>%
 ggplot() +
   geom_bar(aes(y = mean, x = size_cat), stat = "identity")
 ```
+
+# steam data developers csv
+```{r}
+# write.csv(steamDataDevelopers, file = "../data/data_clean/steamDataDevelopers.csv", row.names = FALSE)
+```
+
 
 # Correlation visualization (Chris)
 ```{r}
