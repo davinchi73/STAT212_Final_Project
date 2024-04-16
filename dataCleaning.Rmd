@@ -52,7 +52,8 @@ steamDataClean <- steamData %>%
     full_price = full_price/100,
     discount = discount/100,
     current_price = current_price/100) %>% 
-    filter(full_price <= 200) # Only 2 games with full_price > 199.99
+    filter(full_price <= 200) %>%  # Only 2 games with full_price > 199.99
+  mutate(gfq_rating = gfq_rating*20) %>% # scales gfq_rating to be on the 0-100 scale
 ```
 
 # Wider dataset
@@ -271,6 +272,54 @@ pop_price_genre %>%
     geom_errorbar(aes(x = genre, ymin = min, ymax = max, color = source), position = "dodge") +
     theme_classic()
 ```
+
+# Correlation of different games
+```{r}
+source_stats <- function(source1, source2) {
+  data <- steamDataGenres %>% 
+    select(any_of(c(source1, source2))) %>% 
+    drop_na(any_of(c(source1, source2)))
+  
+  mod <- lm(as.formula(str_c(source1, " ~ ", source2)), data)
+  
+  stats <- list(
+    source1 = source1,
+    source2 = source2,
+    coef = coef(mod)[2],
+    #max = confint(mod)[source2, "97.5 %"],
+    #min = confint(mod)[source2, "2.5 %"],
+    cor = cor(data)[source2, source1]
+  )
+  
+  return(stats)
+}
+
+sources2 <- c("igdb_uscore", "meta_uscore", "store_uscore")
+inputs2 <- expand_grid(sources, sources)
+
+source_cor <- map2(inputs2$sources...1, inputs2$sources...2, source_stats) %>% 
+  bind_rows()
+```
+
+# Score averages
+```{r}
+score_avg <- steamDataGenres %>%
+  mutate(gfq_rating = gfq_rating*20) %>% # scales gfq_rating to be on the 0-100 scale
+  pivot_longer(cols = c(store_uscore, gfq_rating, meta_score, meta_uscore, igdb_score, igdb_uscore), names_to = "score_name") %>% 
+  group_by(score_name) %>% 
+  summarize(avg = mean(value, na.rm = TRUE)) %>% 
+  arrange(desc(avg)) %>% 
+  mutate(score_name = factor(score_name, levels = score_name)) %>% 
+  mutate(score_type = ifelse(score_name %in% c("meta_score", "igdb_score", "gfq_rating"), "not_user_rating", "user_rating"))
+
+ggplot(score_avg) +
+  geom_bar(aes(x = score_name, y = avg, fill = score_type), stat = "identity") +
+  facet_wrap(~score_type) +
+  theme_classic()
+```
+
+
+
 
 
 ```{r}
