@@ -42,6 +42,22 @@ KsteamDataClean <- KsteamData %>%
 
 # cleaning - removing long values from reviews
 ```{r}
+KsteamDataClean <- KsteamDataClean %>% 
+  mutate(recent_positive_percent = str_extract(recent_reviews, "\\d+%"))
+
+KsteamDataClean <- KsteamDataClean %>% 
+  mutate(all_positive_percent = str_extract(all_reviews, "\\d+%"))
+
+KsteamDataClean <- KsteamDataClean %>%
+  mutate(recent_positive_percent = str_extract(recent_positive_percent, "\\d+")) %>% 
+  mutate(all_positive_percent = str_extract(all_positive_percent, "\\d+"))
+
+KsteamDataClean <- KsteamDataClean %>% 
+  mutate(recent_positive_unumber = str_extract(recent_reviews, "\\d+"))
+
+KsteamDataClean <- KsteamDataClean %>% 
+  mutate(all_positive_unumber = str_extract(all_reviews, "\\d+"))
+
 KsteamDataClean$recent_reviews <- 
   str_extract(KsteamDataClean$recent_reviews, "(?i)Overwhelmingly Positive|Very Positive|Positive|Mostly Positive|Mixed|Mostly Negative|Negative|Very Negative|Overwhelmingly Negative")
 
@@ -58,11 +74,13 @@ KsteamDataClean <- KsteamDataClean %>%
   filter(!is.na(all_reviews) == TRUE)
 ```
 
-# cleaning - changing prices to numeric values (TODO)
+# cleaning - changing prices to numeric values
 ```{r}
 KsteamDataClean <- KsteamDataClean %>% 
   mutate(original_price = ifelse(str_detect(original_price, "Free"), 0, as.numeric(str_replace_all(original_price, "[^0-9.]+", ""))))
 ```
+
+
 # vizualizations
 ```{r}
 achievementsPrice <- ggplot(KsteamDataClean) +
@@ -94,13 +112,14 @@ KsteamDataGenres <- KsteamDataClean %>%
   unnest(cols = c(genres)) %>% 
   select(-genre) %>% 
   pivot_wider(names_from = genres, values_from = genres) %>% 
-  mutate(across(.cols = colnames(.)[13:37], function(x) {ifelse(str_detect(x, "NULL"), FALSE, TRUE)}))
+  mutate(across(.cols = colnames(.)[17:41], function(x) {ifelse(str_detect(x, "NULL"), FALSE, TRUE)}))
 ```
 
 # Run price to popularity analysis (TODO)
 ```{r}
 genre_stats <- function(metric, source, genre) {
-  data <- steamDataGenres %>%
+  data <- KsteamDataGenres %>%
+    mutate(across(any_of(c(source, metric)), as.numeric)) %>% 
     filter(genre == genre) %>%
     drop_na(any_of(c(genre, source, metric))) %>% 
     select(any_of(c(source, metric)))
@@ -120,11 +139,28 @@ genre_stats <- function(metric, source, genre) {
 }
 
 # Test case
-genres <- colnames(KsteamDataGenres)[13:37]
+genre_stats(metric = "original_price", source = "all_positive_percent", genre = "Action")
 
-pop_price_genre <- map(genres, genre_stats, metric = "full_price", source = "") %>% 
+
+# genres <- colnames(KsteamDataGenres)[17:41] 
+# To get all genres
+
+genres <- c("Action", "Adventure", "Casual", "Racing", "Indie", "RPG", "Simulation")
+sources <- c("recent_positive_percent", "recent_positive_unumber", "all_positive_percent", "all_positive_unumber")
+inputs <- expand_grid(genres, sources)
+
+pop_price_genre <- map2(inputs$sources, inputs$genres, genre_stats, metric = "original_price") %>%
   bind_rows()
 ```
+
+```{r}
+pop_price_genre %>% 
+  ggplot() +
+    geom_bar(aes(x = genre, y = cor, fill = source, color = source), position = "dodge", alpha = 0.5, stat = "identity") +
+    geom_errorbar(aes(x = genre, ymin = min, ymax = max, color = source), position = "dodge") +
+    theme_classic()
+```
+
 
 
 
