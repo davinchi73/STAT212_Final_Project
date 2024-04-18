@@ -31,7 +31,7 @@ steamDataDevelopers <- read_csv("../../data/data_clean/steamDataDevelopers.csv")
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Steam data"),
+    titlePanel("General Steam data"),
     
     # Tab layout
     tabsetPanel(
@@ -43,11 +43,28 @@ ui <- fluidPage(
                                        "Developer Size vs Price", 
                                        "Average Price Over Years")),
                
-               # Placeholder for plot output
-               plotOutput("plot_output")
+               plotOutput("explore_plots")
                ),
       
-      tabPanel("TBD", "Empty"),
+      tabPanel("Explore Price to User rating",
+               
+               selectInput("rating_select", "Select rating", 
+                           choices = c("Steam Userscore", 
+                                       "IGDB Userscore", 
+                                       "Metacritic Userscore")),
+               
+               selectInput("genre_select", "Select game genre", 
+                           choices = c("Adventure", 
+                                       "Casual", 
+                                       "Action",
+                                       "Racing",
+                                       "Indie",
+                                       "RPG",
+                                       "Simulation")),
+               
+               plotOutput("price_to_rating")
+      ),
+      
       tabPanel("TBD", "Empty")
     )
     
@@ -56,8 +73,10 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   
-  # Generate plot based on user selection
-  output$plot_output <- renderPlot({
+  #----------------TAB1---------------------------------------------------------------------------------------------------------------------------
+  
+  # Generate plot TAB 1 based on user selection
+  output$explore_plots <- renderPlot({
     plot <- NULL
     
     # Check user selection and generate plot accordingly
@@ -90,6 +109,46 @@ server <- function(input, output) {
     # Return the plot
     plot
   })
+  
+  #----------------TAB2---------------------------------------------------------------------------------------------------------------------------
+  
+  # Generate plot TAB 2 based on user selection
+  output$price_to_rating <- renderPlot({
+    
+    titleholder = ""
+    if (input$rating_select == "Steam Userscore") {
+      titleholder = "store_uscore"
+    } else if (input$rating_select == "IGDB Userscore") {
+      titleholder = "igdb_uscore"
+    } else {
+      titleholder = "meta_uscore"
+    }
+    
+    plot <- NULL
+    
+    cleanData <- steamDataGenres %>% 
+      select(full_price, !!sym(input$genre_select), !!sym(titleholder)) %>%
+      filter(!is.na(!!sym(input$genre_select)), full_price <= 70, !!sym(titleholder) <= 250)
+    
+    plot <- ggplot(cleanData) + 
+      geom_point(aes(x = full_price, y = !!sym(titleholder))) +
+      stat_smooth(aes(x = full_price, y = !!sym(titleholder)), method = "lm", se = TRUE) +
+      labs(title = str_c(as.character(input$rating_select), " score vs price for ", as.character(input$genre_select), " games"), 
+           x = "Price", y = as.character(input$rating_select)) + 
+      theme_minimal() +
+      theme(
+        text = element_text(size = 12),
+        plot.title = element_text(face = "bold", size = 12),
+        axis.title = element_text(face = "bold"),
+        legend.position = "bottom"
+      )
+    
+    # Return the plot
+    plot
+  })
+  
+  #----------------TAB3---------------------------------------------------------------------------------------------------------------------------
+  
 }
 
 # Run the application 
