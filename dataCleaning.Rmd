@@ -292,7 +292,7 @@ pop_price_genre %>%
     theme_classic()
 ```
 
-# Correlation of different games
+# Correlation of different games (TODO)
 ```{r}
 source_stats <- function(source1, source2) {
   data <- steamDataGenres %>% 
