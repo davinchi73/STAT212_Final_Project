@@ -112,7 +112,7 @@ KsteamDataGenres <- KsteamDataClean %>%
   unnest(cols = c(genres)) %>% 
   select(-genre) %>% 
   pivot_wider(names_from = genres, values_from = genres) %>% 
-  mutate(across(.cols = colnames(.)[17:41], function(x) {ifelse(str_detect(x, "NULL"), FALSE, TRUE)}))
+  mutate(across(.cols = colnames(.)[17:42], function(x) {ifelse(str_detect(x, "NULL"), FALSE, TRUE)}))
 ```
 
 # Run price to popularity analysis (TODO)
@@ -134,13 +134,11 @@ genre_stats <- function(metric, source, genre) {
     min = confint(mod)[source, "2.5 %"],
     cor = cor(data)[source, metric]
   )
-  
   return(stats)
 }
 
 # Test case
 genre_stats(metric = "original_price", source = "all_positive_percent", genre = "Action")
-
 
 # genres <- colnames(KsteamDataGenres)[17:41] 
 # To get all genres
@@ -156,7 +154,7 @@ pop_price_genre <- map2(inputs$sources, inputs$genres, genre_stats, metric = "or
 ```{r}
 pop_price_genre %>% 
   ggplot() +
-    geom_bar(aes(x = genre, y = cor, fill = source, color = source), position = "dodge", alpha = 0.5, stat = "identity") +
+    geom_bar(aes(x = genre, y = coef, fill = source, color = source), position = "dodge", alpha = 0.5, stat = "identity") +
     geom_errorbar(aes(x = genre, ymin = min, ymax = max, color = source), position = "dodge") +
     theme_classic()
 ```

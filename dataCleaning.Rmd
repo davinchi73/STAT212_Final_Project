@@ -53,7 +53,7 @@ steamDataClean <- steamData %>%
     discount = discount/100,
     current_price = current_price/100) %>% 
     filter(full_price <= 200) %>%  # Only 2 games with full_price > 199.99
-  mutate(gfq_rating = gfq_rating*20) %>% # scales gfq_rating to be on the 0-100 scale
+  mutate(gfq_rating = gfq_rating*20) # scales gfq_rating to be on the 0-100 scale
 ```
 
 # write this data to csv
@@ -292,7 +292,7 @@ pop_price_genre %>%
     theme_classic()
 ```
 
-# Correlation of different games (TODO)
+# Correlation of different rating sites (TODO)
 ```{r}
 source_stats <- function(source1, source2) {
   data <- steamDataGenres %>% 
@@ -313,12 +313,13 @@ source_stats <- function(source1, source2) {
   return(stats)
 }
 
-sources2 <- c("igdb_uscore", "meta_uscore", "store_uscore")
-inputs2 <- expand_grid(sources, sources)
+sources2 <- c("igdb_uscore", "meta_uscore", "store_uscore", "grnk_score")
+inputs2 <- expand_grid(sources2, sources2)
 
-source_cor <- map2(inputs2$sources...1, inputs2$sources...2, source_stats) %>% 
+source_cor <- map2(inputs2$sources2...1, inputs2$sources2...2, source_stats) %>% 
   bind_rows()
 ```
+
 
 # Score averages
 ```{r}
@@ -337,9 +338,32 @@ ggplot(score_avg) +
   theme_classic()
 ```
 
+# IGDB popularity
+```{r}
+steamDataClean %>% 
+  filter(igdb_popularity > 10) %>% 
+  ggplot() +
+    geom_density(aes(x = igdb_popularity))
 
+steamDataClean %>% 
+  filter(igdb_popularity < 100) %>% 
+  ggplot() +
+    geom_point(aes(x = igdb_popularity, y = igdb_score))
 
+steamDataClean %>% 
+  mutate(popularity_cat = cut(igdb_popularity, breaks = seq(0, 50, 10))) %>% 
+  ggplot() +
+    geom_boxplot(aes(x = popularity_cat, y = igdb_score))
 
+lm(igdb_popularity ~ igdb_score, data = steamDataClean) %>% 
+  summary()
+
+popular_games <- steamDataClean %>% 
+  filter(igdb_popularity > 10)
+```
+
+> https://steamdb.info/charts/
+> Steam charts doesn't match igdb popularity well at all
 
 ```{r}
 sessionInfo()
