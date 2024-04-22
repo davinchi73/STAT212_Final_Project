@@ -27,8 +27,8 @@ KsteamData <- read_csv("../data/data_raw/steam_games.csv")
 
 # Overview of data
 ```{r}
-skim(KsteamData)
-KsteamData %>% pull(platforms) %>% unique()
+# skim(KsteamData)
+# KsteamData %>% pull(platforms) %>% unique()
 ```
 
 
