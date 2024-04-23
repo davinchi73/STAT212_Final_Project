@@ -1,0 +1,41 @@
+---
+title: "SteamScraping"
+author: "Chris"
+date: "2024-04-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(rvest)
+```
+
+
+
+```{r}
+get_store_link <- function(page = 1) {
+  
+  link <- read_html("https://store.steampowered.com/search/?ndl=1&ignore_preferences=1")
+  
+  game_link <- link %>% 
+    html_elements(".search_result_row ds_collapse_flag  app_impression_tracked") %>%
+    html_elements("a") %>% 
+    html_attr("href")
+  
+  return(game_link)
+}
+
+get_store_link()
+```
+
+
+# Useful variables: release date, developer, price, genre, title, steamuscore
+
+# Price to steam_uscore
+# Price over time
+# Price to genre
+# Price to release date
