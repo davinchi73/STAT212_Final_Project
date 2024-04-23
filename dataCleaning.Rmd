@@ -314,11 +314,7 @@ pop_price_genre %>%
     theme_classic()
 ```
 
-<<<<<<< HEAD
-# Correlation of different rating sites
-=======
 # Correlation of different games (TODO)
->>>>>>> 68fd541feab9e1311702947595f64ad925cb42a9
 ```{r}
 source_stats <- function(source1, source2) {
   data <- steamDataGenres %>% 
@@ -339,7 +335,6 @@ source_stats <- function(source1, source2) {
   return(stats)
 }
 
-<<<<<<< HEAD
 sources2 <- c("igdb_uscore", "meta_uscore", "store_uscore", "grnk_score")
 inputs2 <- combn(sources2, 2) %>% 
   t() %>% 
@@ -365,28 +360,6 @@ correlations <- steamDataGenres %>%
 corrplot(correlations, method = "number", order = "hclust")
 ```
 
-# Correlation matrix
-```{r}
-# Limitation: drop a LOT of NAs
-correlations <- steamDataGenres %>% 
-  select("igdb_score", "meta_score", "igdb_uscore", "meta_uscore", "store_uscore", "gfq_rating") %>% 
-  drop_na() %>% 
-  cor()
-
-corrplot(correlations, method = "number", order = "hclust")
-```
-
-
-
-=======
-sources2 <- c("igdb_uscore", "meta_uscore", "store_uscore")
-inputs2 <- expand_grid(sources, sources)
-
-source_cor <- map2(inputs2$sources...1, inputs2$sources...2, source_stats) %>% 
-  bind_rows()
-```
-
->>>>>>> 68fd541feab9e1311702947595f64ad925cb42a9
 # Score averages
 ```{r}
 score_avg <- steamDataGenres %>%
