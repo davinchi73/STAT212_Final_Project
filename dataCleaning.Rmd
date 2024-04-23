@@ -55,7 +55,7 @@ steamDataClean <- steamData %>%
     discount = discount/100,
     current_price = current_price/100) %>% 
     filter(full_price <= 200) %>%  # Only 2 games with full_price > 199.99
-  mutate(gfq_rating = gfq_rating*20) # scales gfq_rating to be on the 0-100 scale
+  mutate(gfq_rating = gfq_rating*20)  # scales gfq_rating to be on the 0-100 scale
 ```
 
 # write this data to csv
@@ -314,7 +314,11 @@ pop_price_genre %>%
     theme_classic()
 ```
 
+<<<<<<< HEAD
 # Correlation of different rating sites
+=======
+# Correlation of different games (TODO)
+>>>>>>> 68fd541feab9e1311702947595f64ad925cb42a9
 ```{r}
 source_stats <- function(source1, source2) {
   data <- steamDataGenres %>% 
@@ -335,6 +339,7 @@ source_stats <- function(source1, source2) {
   return(stats)
 }
 
+<<<<<<< HEAD
 sources2 <- c("igdb_uscore", "meta_uscore", "store_uscore", "grnk_score")
 inputs2 <- combn(sources2, 2) %>% 
   t() %>% 
@@ -373,6 +378,15 @@ corrplot(correlations, method = "number", order = "hclust")
 
 
 
+=======
+sources2 <- c("igdb_uscore", "meta_uscore", "store_uscore")
+inputs2 <- expand_grid(sources, sources)
+
+source_cor <- map2(inputs2$sources...1, inputs2$sources...2, source_stats) %>% 
+  bind_rows()
+```
+
+>>>>>>> 68fd541feab9e1311702947595f64ad925cb42a9
 # Score averages
 ```{r}
 score_avg <- steamDataGenres %>%
@@ -389,32 +403,9 @@ ggplot(score_avg) +
   scale_fill_manual(values = c("#325974", "#4F6B1D"))
 ```
 
-# IGDB popularity
-```{r}
-steamDataClean %>% 
-  filter(igdb_popularity > 10) %>% 
-  ggplot() +
-    geom_density(aes(x = igdb_popularity))
 
-steamDataClean %>% 
-  filter(igdb_popularity < 100) %>% 
-  ggplot() +
-    geom_point(aes(x = igdb_popularity, y = igdb_score))
 
-steamDataClean %>% 
-  mutate(popularity_cat = cut(igdb_popularity, breaks = seq(0, 50, 10))) %>% 
-  ggplot() +
-    geom_boxplot(aes(x = popularity_cat, y = igdb_score))
 
-lm(igdb_popularity ~ igdb_score, data = steamDataClean) %>% 
-  summary()
-
-popular_games <- steamDataClean %>% 
-  filter(igdb_popularity > 10)
-```
-
-> https://steamdb.info/charts/
-> Steam charts doesn't match igdb popularity well at all
 
 # Final Plots
 ```{r}
