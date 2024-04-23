@@ -19,8 +19,6 @@ library(lubridate)
 library(ggpubr)
 library(cowplot)
 library(broom)
-library(gtools)
-library(corrplot)
 ```
 
 ```{r}
@@ -97,6 +95,12 @@ steamDataGenres <- steamDataClean %>%
 
 # Data Exploration
 ```{r}
+# Density plot of prices
+steamDataClean %>% 
+ggplot() +
+  geom_density(aes(x = full_price)) +
+  theme_classic()
+
 # Code for getting developer size
 steamDataDevelopers <- steamDataClean %>% 
   group_by(developers) %>% 
@@ -117,15 +121,6 @@ ggplot(steamDataDevelopers) +
   theme_classic() +
   labs(y = "Price", x = "Developer Size")
 ```
-
-# Density plot of prices
-```{r}
-steamDataClean %>% 
-ggplot() +
-  geom_density(aes(x = full_price)) +
-  theme_classic()
-```
-
 
 
 # Devinn's Chunk
@@ -208,6 +203,36 @@ plot_titlem <- ggdraw() +
 ggarrange(plot_titlem, MetacriticPlot, nrow = 2, rel_heights = c(0.1, 0.9), heights = c(0.1, 0.9))
 ```
 
+# Devinn's second chunk DENSITY
+```{r}
+customTheme <- theme_minimal() +
+  theme(
+    text = element_text(size = 12),
+    plot.title = element_text(face = "bold", size = 12),
+    axis.title = element_text(face = "bold"),
+    legend.position = "bottom"
+  )
+
+densityPlizzleFunctizzle <- function(xlab, ylab, titl, genreVar, popularityVar, data) {
+  cleanData <- data %>% 
+    select(full_price, !!sym(genreVar), !!sym(popularityVar)) %>%
+    filter(!is.na(!!sym(genreVar)), full_price <= 70, !!sym(popularityVar) <= 250)
+  
+  ggplot(cleanData) + 
+  geom_density(aes(x = full_price)) +
+  labs(title = titl, x = xlab, y = ylab) + 
+  customTheme
+}
+
+densityPlizzle <- densityPlizzleFunctizzle("Price", "Density", "Price Density Meta", "Adventure", "meta_uscore", steamDataGenres)
+densityPlizzle
+
+densityPlizzle2 <- densityPlizzleFunctizzle("Price", "Density", "Price Density IGDB", "Adventure", "igdb_uscore", steamDataGenres)
+densityPlizzle2
+
+densityPlizzle3 <- densityPlizzleFunctizzle("Price", "Density", "Price Density steam", "Adventure", "store_uscore", steamDataGenres)
+densityPlizzle3
+```
 
 
 # Chris's Chunk
@@ -215,6 +240,14 @@ ggarrange(plot_titlem, MetacriticPlot, nrow = 2, rel_heights = c(0.1, 0.9), heig
 ggplot(steamDataClean) + 
   geom_boxplot(aes(x = platforms, y = full_price)) + 
   scale_y_continuous(limits = c(0, 50))
+
+steamDataClean %>%  
+  mutate(published_store = ymd(published_store)) %>%
+  mutate(year = year(published_store)) %>% 
+  group_by(year) %>% 
+  summarize(avg_price = mean(full_price)) %>%
+  ggplot() +
+    geom_bar(aes(x = year, y = avg_price), stat = "identity")
 
 steamDataClean %>%  
   mutate(published_store = ymd(published_store)) %>%
@@ -236,23 +269,6 @@ steamDataDevelopers %>%
 ggplot() +
   geom_bar(aes(y = mean, x = size_cat), stat = "identity")
 ```
-
-# Price to year
-```{r}
-avg_price <- steamDataClean %>%  
-  mutate(published_store = ymd(published_store)) %>%
-  mutate(year = year(published_store)) %>% 
-  group_by(year) %>% 
-  summarize(avg_price = mean(full_price))
-
-ggplot(avg_price) +
-  geom_bar(aes(x = year, y = avg_price), stat = "identity") +
-  #geom_histogram(aes(x = year)) +
-  theme_classic()
-
-# Possibly overlay histogram for year?
-```
-
 
 # steam data developers csv
 ```{r}
@@ -298,14 +314,6 @@ pop_price_genre %>%
   summarize(avg = mean(cor)) %>% 
   arrange(avg)
 
-# Coefficients
-pop_price_genre %>% 
-  mutate(genre = factor(genre, levels = c("Racing", "Adventure", "Casual", "Indie", "RPG", "Action", "Simulation"))) %>% 
-  ggplot() +
-    geom_bar(aes(x = genre, y = cor, fill = source, color = source), position = "dodge", alpha = 0.5, stat = "identity") +
-  theme_classic()
-
-# Correlations
 pop_price_genre %>% 
   mutate(genre = factor(genre, levels = c("Racing", "Adventure", "Casual", "Indie", "RPG", "Action", "Simulation"))) %>% 
   ggplot() +
@@ -327,66 +335,36 @@ source_stats <- function(source1, source2) {
     source1 = source1,
     source2 = source2,
     coef = coef(mod)[2],
-    max = confint(mod)[source2, "97.5 %"],
-    min = confint(mod)[source2, "2.5 %"],
+    #max = confint(mod)[source2, "97.5 %"],
+    #min = confint(mod)[source2, "2.5 %"],
     cor = cor(data)[source2, source1]
   )
   
   return(stats)
 }
 
-sources2 <- c("igdb_uscore", "meta_uscore", "store_uscore", "grnk_score")
-inputs2 <- combn(sources2, 2) %>% 
-  t() %>% 
-  as.data.frame()
+sources2 <- c("igdb_uscore", "meta_uscore", "store_uscore")
+inputs2 <- expand_grid(sources, sources)
 
-source_cor <- map2(inputs2$V1, inputs2$V2, source_stats) %>% 
-  bind_rows() %>% 
-  filter(cor == unique(cor)) %>% 
-  mutate(sources = str_c(source1, ", ", source2))
-
-# Correlations
-source_cor %>% 
-  ggplot() +
-    geom_bar(aes(x = sources,  y = coef, fill = sources, color = sources), position = "dodge", alpha = 0.5, stat = "identity") +
-    geom_errorbar(aes(x = sources, ymin = min, ymax = max, color = sources), position = "dodge") +
-    theme_classic()
-
-correlations <- steamDataGenres %>% 
-  select("igdb_score", "meta_score", "igdb_uscore", "meta_uscore", "store_uscore", "gfq_rating") %>% 
-  drop_na() %>% 
-  cor()
-
-corrplot(correlations, method = "number", order = "hclust")
+source_cor <- map2(inputs2$sources...1, inputs2$sources...2, source_stats) %>% 
+  bind_rows()
 ```
 
 # Score averages
 ```{r}
 score_avg <- steamDataGenres %>%
-  pivot_longer(cols = c(meta_score, meta_uscore, igdb_score, igdb_uscore), names_to = "score_name") %>% 
+  mutate(gfq_rating = gfq_rating*20) %>% # scales gfq_rating to be on the 0-100 scale
+  pivot_longer(cols = c(store_uscore, gfq_rating, meta_score, meta_uscore, igdb_score, igdb_uscore), names_to = "score_name") %>% 
   group_by(score_name) %>% 
   summarize(avg = mean(value, na.rm = TRUE)) %>% 
-  mutate(score_type = ifelse(str_detect(score_name, "uscore"), "not_user_rating", "user_rating")) %>% 
-  mutate(source = ifelse(str_detect(score_name, "igdb"), "igdb", "metacritic"))
+  arrange(desc(avg)) %>% 
+  mutate(score_name = factor(score_name, levels = score_name)) %>% 
+  mutate(score_type = ifelse(score_name %in% c("meta_score", "igdb_score", "gfq_rating"), "not_user_rating", "user_rating"))
 
 ggplot(score_avg) +
-  geom_bar(aes(x = score_name, y = avg, fill = score_type), color = "#010203", stat = "identity") +
-  facet_wrap(~source, scales = "free_x") +
-  theme_classic() +
-  scale_fill_manual(values = c("#325974", "#4F6B1D"))
-```
-
-
-
-
-
-# Final Plots
-```{r}
-# Distribution of prices
-# Price to year
-# Big picture price to popularity correlations 
-# Correlation matrices
-# Score averages
+  geom_bar(aes(x = score_name, y = avg, fill = score_type), stat = "identity") +
+  facet_wrap(~score_type) +
+  theme_classic()
 ```
 
 
