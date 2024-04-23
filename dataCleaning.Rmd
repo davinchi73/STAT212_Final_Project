@@ -21,6 +21,7 @@ library(cowplot)
 library(broom)
 library(gtools)
 library(corrplot)
+library(RColorBrewer)
 ```
 
 ```{r}
@@ -116,31 +117,6 @@ ggplot(steamDataDevelopers) +
   geom_smooth(aes(x = developer_size, y = full_price), method = "lm", se = FALSE) +
   theme_classic() +
   labs(y = "Price", x = "Developer Size")
-```
-
-# Density plot of prices
-```{r}
-steamDataClean %>% 
-ggplot() +
-  geom_density(aes(x = full_price)) +
-  theme_classic()
-```
-
-# Price to year
- 
-```{r}
- 
-avg_price <- steamDataClean %>%  
-  mutate(published_store = ymd(published_store)) %>%
-  mutate(year = year(published_store)) %>% 
-  group_by(year) %>% 
-  mutate(avg_price = mean(full_price), cases = n()) %>% 
-  group_by(year) %>% 
-  filter(cases > 6)
-
-ggplot(avg_price) +
-  geom_bar(aes(x = year, y = avg_price/cases, fill = cases), stat = "identity") +
-  theme_classic()
 ```
 
 # Devinn's Chunk
@@ -252,21 +228,6 @@ ggplot() +
   geom_bar(aes(y = mean, x = size_cat), stat = "identity")
 ```
 
-# Price to year
-```{r}
-avg_price <- steamDataClean %>%  
-  mutate(published_store = ymd(published_store)) %>%
-  mutate(year = year(published_store)) %>% 
-  group_by(year) %>% 
-  mutate(avg_price = mean(full_price), cases = n()) %>% 
-  group_by(year) %>% 
-  filter(cases > 6)
-
-ggplot(avg_price) +
-  geom_bar(aes(x = year, y = avg_price/cases, fill = cases), stat = "identity") +
-  theme_classic()
-```
-
 
 # steam data developers csv
 ```{r}
@@ -312,14 +273,14 @@ pop_price_genre %>%
   summarize(avg = mean(cor)) %>% 
   arrange(avg)
 
-# Coefficients
+# Correlations
 pop_price_genre %>% 
   mutate(genre = factor(genre, levels = c("Racing", "Adventure", "Casual", "Indie", "RPG", "Action", "Simulation"))) %>% 
   ggplot() +
     geom_bar(aes(x = genre, y = cor, fill = source, color = source), position = "dodge", alpha = 0.5, stat = "identity") +
   theme_classic()
 
-# Correlations
+# Coefficients
 pop_price_genre %>% 
   mutate(genre = factor(genre, levels = c("Racing", "Adventure", "Casual", "Indie", "RPG", "Action", "Simulation"))) %>% 
   ggplot() +
@@ -328,7 +289,7 @@ pop_price_genre %>%
     theme_classic()
 ```
 
-# Correlation of different games (TODO)
+# Correlation of different games
 ```{r}
 source_stats <- function(source1, source2) {
   data <- steamDataGenres %>% 
@@ -365,13 +326,61 @@ source_cor %>%
     geom_bar(aes(x = sources,  y = coef, fill = sources, color = sources), position = "dodge", alpha = 0.5, stat = "identity") +
     geom_errorbar(aes(x = sources, ymin = min, ymax = max, color = sources), position = "dodge") +
     theme_classic()
+```
 
+
+# Final Visualizations
+
+# Density plot of prices
+```{r}
+steamDataClean %>% 
+ggplot() +
+  geom_density(aes(x = full_price), fill = "#C5C3C0") +
+  labs(x = "Price of Game (USD, excluding discounts)", y = "Proportion of Games") +
+  theme_classic()
+```
+
+# Price to year
+```{r}
+avg_price <- steamDataClean %>%  
+  mutate(published_store = ymd(published_store)) %>%
+  mutate(year = year(published_store)) %>% 
+  group_by(year) %>% 
+  mutate(avg_price = mean(full_price), cases = n()) %>% 
+  filter(year > 2009)
+
+ggplot(avg_price) +
+  geom_bar(aes(x = year, y = avg_price/cases, fill = cases), stat = "identity") +
+  #geom_text(aes(x = year, y = avg_price, label = cases), vjust = -.5) +
+  labs(y = "Average Price (USD)", fill = "# Games Published", x = "Year Published") +
+  scale_fill_gradient(high = "#4C6B22", low = "#D2E885") +
+  theme_classic()
+```
+
+```{r}
+# Coefficients
+pop_price_genre %>% 
+  mutate(genre = factor(genre, levels = c("Racing", "Adventure", "Casual", "Indie", "RPG", "Action", "Simulation"))) %>% 
+  ggplot() +
+    geom_bar(aes(x = genre, y = coef, fill = source, color = source), position = "dodge", alpha = 0.5, stat = "identity") +
+    geom_errorbar(aes(x = genre, ymin = min, ymax = max, color = source), position = "dodge") +
+    labs(x = "Genre") +
+    theme_classic()
+```
+# Correlation matrix
+```{r}
 correlations <- steamDataGenres %>% 
-  select("igdb_score", "meta_score", "igdb_uscore", "meta_uscore", "store_uscore", "gfq_rating") %>% 
+  select("igdb_score", "meta_score", "igdb_uscore", "meta_uscore", "store_uscore", "gfq_rating") %>%
+  rename("IGDB" = igdb_score, 
+         "Metacritic" = meta_score, 
+         "IGDB Users" = igdb_uscore, 
+         "Metacritic Users" = meta_uscore, 
+         "Steam Users" = store_uscore,
+         "GameFAQs" = gfq_rating) %>% 
   drop_na() %>% 
   cor()
 
-corrplot(correlations, method = "number", order = "hclust")
+corrplot(correlations, method = "number", order = "hclust", tl.col = "black", tl.srt = 45)
 ```
 
 # Score averages
@@ -380,32 +389,16 @@ score_avg <- steamDataGenres %>%
   pivot_longer(cols = c(meta_score, meta_uscore, igdb_score, igdb_uscore), names_to = "score_name") %>% 
   group_by(score_name) %>% 
   summarize(avg = mean(value, na.rm = TRUE)) %>% 
-  mutate(score_type = ifelse(str_detect(score_name, "uscore"), "not_user_rating", "user_rating")) %>% 
-  mutate(source = ifelse(str_detect(score_name, "igdb"), "igdb", "metacritic"))
+  mutate(score_type = ifelse(str_detect(score_name, "uscore"), "Critic Rating", "User Rating")) %>% 
+  mutate(source = ifelse(str_detect(score_name, "igdb"), "IGDB", "Metacritic"))
 
 ggplot(score_avg) +
-  geom_bar(aes(x = score_name, y = avg, fill = score_type), color = "#010203", stat = "identity") +
+  geom_bar(aes(x = score_name, y = avg, fill = score_type), stat = "identity") +
   facet_wrap(~source, scales = "free_x") +
+  labs(y = "Average Rating", x = "", fill = "Score Type") +
   theme_classic() +
-  scale_fill_manual(values = c("#325974", "#4F6B1D"))
+  scale_fill_manual(values = c("#325974", "#67C1F5"))
 ```
-
-
-
-
-
-# Final Plots
-```{r}
-# Distribution of prices
-# Price to year
-# Big picture price to popularity correlations 
-# Correlation matrices
-# Score averages
-```
-
-
-
-
 
 ```{r}
 sessionInfo()
