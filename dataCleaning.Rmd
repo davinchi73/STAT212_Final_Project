@@ -126,7 +126,22 @@ ggplot() +
   theme_classic()
 ```
 
+# Price to year
+ 
+```{r}
+ 
+avg_price <- steamDataClean %>%  
+  mutate(published_store = ymd(published_store)) %>%
+  mutate(year = year(published_store)) %>% 
+  group_by(year) %>% 
+  mutate(avg_price = mean(full_price), cases = n()) %>% 
+  group_by(year) %>% 
+  filter(cases > 6)
 
+ggplot(avg_price) +
+  geom_bar(aes(x = year, y = avg_price/cases, fill = cases), stat = "identity") +
+  theme_classic()
+```
 
 # Devinn's Chunk
 ```{r, fig.width = 15}
