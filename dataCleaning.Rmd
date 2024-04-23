@@ -53,7 +53,7 @@ steamDataClean <- steamData %>%
     discount = discount/100,
     current_price = current_price/100) %>% 
     filter(full_price <= 200) %>%  # Only 2 games with full_price > 199.99
-  mutate(gfq_rating = gfq_rating*20) %>% # scales gfq_rating to be on the 0-100 scale
+  mutate(gfq_rating = gfq_rating*20)  # scales gfq_rating to be on the 0-100 scale
 ```
 
 # write this data to csv

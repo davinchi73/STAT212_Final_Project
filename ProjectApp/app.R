@@ -25,6 +25,26 @@ steamDataClean <- read_csv("../../data/data_clean/steamDataClean.csv")
 steamDataGenres <- read_csv("../../data/data_clean/steamDataGenres.csv")
 steamDataDevelopers <- read_csv("../../data/data_clean/steamDataDevelopers.csv")
 
+# functions
+genre_stats <- function(metric, source, genre) {
+  data <- steamDataGenres %>%
+    filter(genre == genre) %>%
+    drop_na(any_of(c(genre, source, metric))) %>% 
+    select(any_of(c(source, metric)))
+  
+  mod <- lm(as.formula(str_c(metric, " ~ ", source)), data)
+  
+  stats <- list(
+    genre = genre,
+    source = source,
+    coef = coef(mod)[2],
+    max = confint(mod)[source, "97.5 %"],
+    min = confint(mod)[source, "2.5 %"],
+    cor = cor(data)[source, metric]
+  )
+  
+  return(stats)
+}
 
 # ui design start here
 ui <- fluidPage(
@@ -36,14 +56,13 @@ ui <- fluidPage(
     tabsetPanel(
       
       # TAB1 -------------------------------------------------------------------------------------------------------------------------------------
-      tabPanel("Info Page",
+      tabPanel("Info Page", 
                
                fluidRow(
                  column(12, 
                         uiOutput("info_paragraph")
-                 )
+                  )
                )
-        
       ),
       
       # TAB2 -----------------------------------------------------------------------------------------------------------------------------------
@@ -98,7 +117,8 @@ ui <- fluidPage(
                            value = 35),
                
                # plot
-               plotOutput("price_to_rating")
+               plotOutput("price_to_rating"),
+               plotOutput("big_price_plot")
       )
       
       # END TABS --------------------------------------------------------------------------------------------------------------------------------
@@ -185,6 +205,8 @@ server <- function(input, output) {
                  tags$p("Use this page to explore the pricing of video games on Steam vs their user rating. You can use the selector tools
                  on the lefthand side of the page to change which user ratings (from 3 different websites) to view, which genre of game you 
                  want to examine, and the pricing value that you want to limit the graph to.")
+                 
+                 # tags$img(src = "../images/SLOGO.png", width = "100%", height = "auto") #not working
                  
                ))
       )
@@ -280,6 +302,34 @@ server <- function(input, output) {
     
     # Return the plot
     plot
+    
+  })
+  
+  
+  output$big_price_plot <- renderPlot({
+    
+    genres <- c("Action", "Adventure", "Casual", "Racing", "Indie", "RPG", "Simulation")
+    sources <- c("igdb_uscore", "meta_uscore", "store_uscore")
+    inputs <- expand_grid(genres, sources)
+    
+    pop_price_genre <- map2(inputs$sources, inputs$genres, genre_stats, metric = "full_price") %>% 
+      bind_rows()
+    
+    # Determines the order of genres based on average cor
+    pop_price_genre %>% 
+      group_by(genre) %>% 
+      summarize(avg = mean(cor)) %>% 
+      arrange(avg)
+    
+    plot <- pop_price_genre %>% 
+      mutate(genre = factor(genre, levels = c("Racing", "Adventure", "Casual", "Indie", "RPG", "Action", "Simulation"))) %>% 
+      ggplot() +
+      geom_bar(aes(x = genre, y = coef, fill = source, color = source), position = "dodge", alpha = 0.5, stat = "identity") +
+      geom_errorbar(aes(x = genre, ymin = min, ymax = max, color = source), position = "dodge") +
+      theme_classic()
+    
+    plot
+    
   })
   
   # END SERVER LOGIC ---------------------------------------------------------------------------------------------------------------------------
