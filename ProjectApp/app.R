@@ -115,6 +115,15 @@ ui <- fluidPage(
       
       # TAB5 -----------------------------------------------------------------------------------------------------------------------------------
       
+      
+      tabPanel("Examining Price Distribution",
+               
+               uiOutput("density_page")
+               
+      ),
+      
+      # TAB6 -----------------------------------------------------------------------------------------------------------------------------------
+      
       tabPanel("Limitations and Future Implementations",
                
                uiOutput("limitations_page")
@@ -366,7 +375,6 @@ server <- function(input, output) {
     
   })
   
-  
   output$big_price_plot <- renderPlot({
     
     genres <- c("Action", "Adventure", "Casual", "Racing", "Indie", "RPG", "Simulation")
@@ -394,6 +402,89 @@ server <- function(input, output) {
   })
   
   #----------------TAB5---------------------------------------------------------------------------------------------------------------------------
+  
+  
+  output$density_page <- renderUI({
+    fluidRow(
+      column(6,
+             selectInput("rating_selectD", "Select rating", 
+                         choices = c("Steam Userscore", 
+                                     "IGDB Userscore", 
+                                     "Metacritic Userscore")),
+             selectInput("genre_selectD", "Select game genre", 
+                         choices = c("Adventure", 
+                                     "Casual", 
+                                     "Action",
+                                     "Racing",
+                                     "Indie",
+                                     "RPG",
+                                     "Simulation")),
+             sliderInput("price_selectD",
+                         "Price parameter",
+                         min = 0,
+                         max = 70,
+                         value = 35),
+             sliderInput("pop_max", 
+                         "Max Popularity",
+                         min = 1, 
+                         max = 100,
+                         value = 100),
+             sliderInput("pop_min",
+                         "Min Popularity",
+                         min = 0,
+                         max = 99,
+                         value = 0)
+             ),
+      column(6,
+             tags$div(
+               style = "font-family: Arial, sans-serif; line-height: 1.5;",
+               
+               tags$h3("Directions of Usage"),
+               tags$p("Use this page to explore the density of pricing of video games on Steam. You can use the selector tools
+               on the lefthand side of the page to change which user ratings (from 3 different websites) to view, which genre of game you 
+               want to examine, and the pricing value that you want to limit the graph to. You can also select the popularity range 
+               you would like to examine.")
+             ),
+      ),
+      column(12,
+             plotOutput("price_density")
+            )
+      )
+  })
+  
+  output$price_density <- renderPlot({
+    
+    titleholderD = ""
+    if (input$rating_selectD == "Steam Userscore") {
+      titleholderD = "store_uscore"
+    } else if (input$rating_selectD == "IGDB Userscore") {
+      titleholderD = "igdb_uscore"
+    } else {
+      titleholderD = "meta_uscore"
+    }
+    
+    cleanData <- steamDataGenres %>% 
+      select(full_price, !!sym(input$genre_selectD), !!sym(titleholderD)) %>%
+      filter(!is.na(!!sym(input$genre_selectD)), 
+             full_price <= 70,
+             !!sym(titleholderD) <= input$pop_max,
+             !!sym(titleholderD) >= input$pop_min)
+    
+    plotski <- ggplot(cleanData) + 
+      geom_density(aes(x = full_price)) +
+      labs(title = str_c("Price density of ", as.character(input$genre_selectD), " Steam Games, in terms of ", as.character(input$rating_selectD)), x = "Full Price of Video Games", y = "Density") +
+      theme_minimal() +
+      theme(
+        text = element_text(size = 12),
+        plot.title = element_text(face = "bold", size = 12),
+        axis.title = element_text(face = "bold"),
+        legend.position = "bottom")
+    
+    plotski
+  })
+  
+  #----------------TAB6---------------------------------------------------------------------------------------------------------------------------
+  
   
   output$limitations_page <- renderUI({
     
