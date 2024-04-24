@@ -80,59 +80,14 @@ ui <- fluidPage(
                uiOutput("info_paragraph")
       ),
       
+      
       # TAB2 -----------------------------------------------------------------------------------------------------------------------------------
-      
-      # tabPanel("User Guide",
-      # 
-      #         uiOutput("directions_page")
-      # 
-      # ),
-      
-      # TAB3 -----------------------------------------------------------------------------------------------------------------------------------
-      
-      # tabPanel("Explore Steam Data",
-      #          
-      #          # Plot select (switch between plots)
-      #          selectInput("plot_select", "Select Plot", 
-      #                      choices = c("Density Plot of Prices", 
-      #                                  "Developer Size vs Price", 
-      #                                  "Average Price Over Years")),
-      #          
-      #          # plot
-      #          plotOutput("explore_plots")
-      #          ),
-      
-      # TAB4 -----------------------------------------------------------------------------------------------------------------------------------
       tabPanel("Explore Price to User rating",
                
-               # # Rating select (switch between specific rating scale)
-               # selectInput("rating_select", "Select rating", 
-               #             choices = c("Steam Userscore", 
-               #                         "IGDB Userscore", 
-               #                         "Metacritic Userscore")),
-               # 
-               # # Genre select (switch between most popular game genres)
-               # selectInput("genre_select", "Select game genre", 
-               #             choices = c("Adventure", 
-               #                         "Casual", 
-               #                         "Action",
-               #                         "Racing",
-               #                         "Indie",
-               #                         "RPG",
-               #                         "Simulation")),
-               # 
-               # # Price select (change the max price value on x axis to see large scale vs small scale shifts)
-               # sliderInput("price_select",
-               #             "Price parameter",
-               #             min = 0,
-               #             max = 70,
-               #             value = 35),
-               
-               # plot
                uiOutput("plot_page")
       ),
       
-      # TAB5 -----------------------------------------------------------------------------------------------------------------------------------
+      # TAB3 -----------------------------------------------------------------------------------------------------------------------------------
       
       
       tabPanel("Examining Price Distribution",
@@ -141,7 +96,7 @@ ui <- fluidPage(
                
       ),
       
-      # TAB6 -----------------------------------------------------------------------------------------------------------------------------------
+      # TAB4 -----------------------------------------------------------------------------------------------------------------------------------
       
       tabPanel("Limitations and Future Implementations",
                
@@ -310,89 +265,6 @@ server <- function(input, output) {
   
   #----------------TAB2--------------------------------------------------------------------------------------------------------------------------
   
-  # output$directions_page <- renderUI({ 
-  #     fluidRow(
-  #       column(12, 
-  #              tags$div(
-  #                style = "font-family: Arial, sans-serif; line-height: 1.5;",
-  #                
-  #                tags$h2("How to Use Our Tool"),
-  #                
-  #                # tags$h3("Explore Steam Data page"),
-  #                # tags$p("Use this page to explore various aspects of the Steam API dataset. By using the dropdown selector tool on the 
-  #                # lefthand side of the page, you can choose to view either a density plot of prices of video games on Steam, a plot that
-  #                # displays game developer size vs price of games on Steam, or a plot that displays the average price of games on Steam over 
-  #                # time."),
-  #                
-  #                tags$h3("Explore Price to User Rating Page"),
-  #                tags$p("Use this page to explore the pricing of video games on Steam vs their user rating. You can use the selector tools
-  #                on the lefthand side of the page to change which user ratings (from 3 different websites) to view, which genre of game you 
-  #                want to examine, and the pricing value that you want to limit the graph to.")
-  #                
-  #                # tags$img(src = "../images/SLOGO.png", width = "100%", height = "auto") #not working
-  #                
-  #              ))
-  #     )
-  #   })
-  
-  #----------------TAB3---------------------------------------------------------------------------------------------------------------------------
-  
-  # # Generate plot TAB 2 based on user selection
-  # output$explore_plots <- renderPlot({
-  #   plot <- NULL
-  #   
-  #   # Check user selection and generate plot accordingly
-  #   if (input$plot_select == "Density Plot of Prices") {
-  #     
-  #     plot <- ggplot(steamDataClean) +
-  #       geom_density(aes(x = full_price)) +
-  #       theme_classic() +
-  #       theme(plot.margin = margin(5.5, 5.5, 150, 5.5))
-  #     
-  #     plot <- ggdraw() +
-  #       draw_plot(plot) +
-  #       draw_label("THIS WILL BE A PARAGRAPH EXPLAINING RESULTS ON THE PLOT", 
-  #                  x = 0.5, y = -0.001, size = 12, hjust = 0.5, vjust = -8)
-  #     
-  #   } else if (input$plot_select == "Developer Size vs Price") {
-  #     
-  #     plot <- ggplot(steamDataDevelopers) +
-  #       geom_point(aes(x = developer_size, y = full_price)) +
-  #       geom_smooth(aes(x = developer_size, y = full_price), method = "lm", se = FALSE) +
-  #       theme_classic() +
-  #       labs(y = "Price", x = "Developer Size") +
-  #       theme(plot.margin = margin(5.5, 5.5, 150, 5.5))
-  #     
-  #     plot <- ggdraw() +
-  #       draw_plot(plot) +
-  #       draw_label("THIS WILL BE A PARAGRAPH EXPLAINING RESULTS ON THE PLOT", 
-  #                  x = 0.5, y = -0.001, size = 12, hjust = 0.5, vjust = -8)
-  #     
-  #   } else if (input$plot_select == "Average Price Over Years") {
-  #     
-  #     plot <- steamDataClean %>%  
-  #       mutate(published_store = ymd(published_store)) %>%
-  #       mutate(year = year(published_store)) %>% 
-  #       group_by(year) %>% 
-  #       summarize(avg_price = mean(full_price)) %>%
-  #       ggplot() +
-  #       geom_bar(aes(x = year, y = avg_price), stat = "identity") +
-  #       theme(plot.margin = margin(5.5, 5.5, 150, 5.5))
-  #     
-  #     plot <- ggdraw() +
-  #       draw_plot(plot) +
-  #       draw_label("THIS WILL BE A PARAGRAPH EXPLAINING RESULTS ON THE PLOT", 
-  #                  x = 0.5, y = -0.001, size = 12, hjust = 0.5, vjust = -8)
-  #     
-  #   }
-  #   
-  #   # Return the plot
-  #   plot
-  # })
-  
-  #----------------TAB4---------------------------------------------------------------------------------------------------------------------------
-  
-  
   output$plot_page <- renderUI({
     fluidRow(
       column(6,
@@ -431,7 +303,7 @@ server <- function(input, output) {
     )
   })
   
-  # Generate plot TAB 3 based on user selection
+  # Generate plot based on user selection
   output$price_to_rating <- renderPlot({
     
     titleholder = ""
@@ -493,7 +365,7 @@ server <- function(input, output) {
     
   })
   
-  #----------------TAB5---------------------------------------------------------------------------------------------------------------------------
+  #----------------TAB3---------------------------------------------------------------------------------------------------------------------------
   
   
   output$density_page <- renderUI({
@@ -575,7 +447,7 @@ server <- function(input, output) {
     plotski
   })
   
-  #----------------TAB6---------------------------------------------------------------------------------------------------------------------------
+  #----------------TAB4---------------------------------------------------------------------------------------------------------------------------
   
   
   output$limitations_page <- renderUI({
