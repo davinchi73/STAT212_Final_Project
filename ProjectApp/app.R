@@ -46,6 +46,25 @@ genre_stats <- function(metric, source, genre) {
   return(stats)
 }
 
+source_stats <- function(source1, source2) {
+  data <- steamDataGenres %>% 
+    select(any_of(c(source1, source2))) %>% 
+    drop_na(any_of(c(source1, source2)))
+  
+  mod <- lm(as.formula(str_c(source1, " ~ ", source2)), data)
+  
+  stats <- list(
+    source1 = source1,
+    source2 = source2,
+    coef = coef(mod)[2],
+    max = confint(mod)[source2, "97.5 %"],
+    min = confint(mod)[source2, "2.5 %"],
+    cor = cor(data)[source2, source1]
+  )
+  
+  return(stats)
+}
+
 # ui design start here
 ui <- fluidPage(
 
@@ -183,6 +202,16 @@ server <- function(input, output) {
                     more about how the size of developers influences user ratings, and also how the user ratings of cheap or expensive games 
                     change over time."),
                
+               plotOutput('source_correlation'),
+               
+               plotOutput('price_dense_intro'),
+               
+               plotOutput('priceToYear'),
+               
+               plotOutput('correlations'),
+               
+               plotOutput('score_ave'),
+               
                tags$h3("General Findings"),
                tags$p("TBD")
             )
@@ -214,6 +243,93 @@ server <- function(input, output) {
     
     plot
     
+  })
+  
+  output$source_correlation <- renderPlot({
+    
+    sources2 <- c("igdb_uscore", "meta_uscore", "store_uscore", "grnk_score")
+    inputs2 <- combn(sources2, 2) %>% 
+      t() %>% 
+      as.data.frame()
+    
+    source_cor <- map2(inputs2$V1, inputs2$V2, source_stats) %>% 
+      bind_rows() %>% 
+      filter(cor == unique(cor)) %>% 
+      mutate(sources = str_c(source1, ", ", source2))
+    
+    # Correlations
+    plott <- source_cor %>% 
+      ggplot() +
+      geom_bar(aes(x = sources,  y = coef, fill = sources, color = sources), position = "dodge", alpha = 0.5, stat = "identity") +
+      geom_errorbar(aes(x = sources, ymin = min, ymax = max, color = sources), position = "dodge") +
+      theme_classic()
+    
+    plott
+  })
+  
+  
+  output$price_dense_intro <- renderPlot({
+    plotto <- steamDataClean %>% 
+      ggplot() +
+      geom_density(aes(x = full_price), fill = "#C5C3C0") +
+      labs(x = "Price of Game (USD, excluding discounts)", y = "Proportion of Games") +
+      theme_classic()
+    
+    plotto
+  })
+  
+  output$priceToYear <- renderPlot({
+    avg_price <- steamDataClean %>%  
+      mutate(published_store = ymd(published_store)) %>%
+      mutate(year = year(published_store)) %>% 
+      group_by(year) %>% 
+      mutate(avg_price = mean(full_price), cases = n()) %>% 
+      filter(year > 2009)
+    
+    plottski <- ggplot(avg_price) +
+      geom_bar(aes(x = year, y = avg_price/cases, fill = cases), stat = "identity") +
+      #geom_text(aes(x = year, y = avg_price, label = cases), vjust = -.5) +
+      labs(y = "Average Price (USD)", fill = "# Games Published", x = "Year Published") +
+      scale_fill_gradient(high = "#4C6B22", low = "#D2E885") +
+      theme_classic()
+    
+    plottski
+  })
+  
+  output$correlations <- renderPlot({
+    
+    correlations <- steamDataGenres %>% 
+      select("igdb_score", "meta_score", "igdb_uscore", "meta_uscore", "store_uscore", "gfq_rating") %>%
+      rename("IGDB" = igdb_score, 
+             "Metacritic" = meta_score, 
+             "IGDB Users" = igdb_uscore, 
+             "Metacritic Users" = meta_uscore, 
+             "Steam Users" = store_uscore,
+             "GameFAQs" = gfq_rating) %>% 
+      drop_na() %>% 
+      cor()
+    
+    plotaroo <- corrplot(correlations, method = "number", order = "hclust", tl.col = "black", tl.srt = 45)
+    
+    plotaroo
+  })
+  
+  output$score_ave <- renderPlot({
+    score_avg <- steamDataGenres %>%
+      pivot_longer(cols = c(meta_score, meta_uscore, igdb_score, igdb_uscore), names_to = "score_name") %>% 
+      group_by(score_name) %>% 
+      summarize(avg = mean(value, na.rm = TRUE)) %>% 
+      mutate(score_type = ifelse(str_detect(score_name, "uscore"), "Critic Rating", "User Rating")) %>% 
+      mutate(source = ifelse(str_detect(score_name, "igdb"), "IGDB", "Metacritic"))
+    
+    plotskittles <- ggplot(score_avg) +
+      geom_bar(aes(x = score_name, y = avg, fill = score_type), stat = "identity") +
+      facet_wrap(~source, scales = "free_x") +
+      labs(y = "Average Rating", x = "", fill = "Score Type") +
+      theme_classic() +
+      scale_fill_manual(values = c("#325974", "#67C1F5"))
+    
+    plotskittles
   })
   
   #----------------TAB2--------------------------------------------------------------------------------------------------------------------------
