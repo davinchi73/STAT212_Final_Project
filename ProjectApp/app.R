@@ -202,8 +202,6 @@ server <- function(input, output) {
                     more about how the size of developers influences user ratings, and also how the user ratings of cheap or expensive games 
                     change over time."),
                
-               plotOutput('source_correlation'),
-               
                plotOutput('price_dense_intro'),
                
                plotOutput('priceToYear'),
@@ -243,28 +241,6 @@ server <- function(input, output) {
     
     plot
     
-  })
-  
-  output$source_correlation <- renderPlot({
-    
-    sources2 <- c("igdb_uscore", "meta_uscore", "store_uscore", "grnk_score")
-    inputs2 <- combn(sources2, 2) %>% 
-      t() %>% 
-      as.data.frame()
-    
-    source_cor <- map2(inputs2$V1, inputs2$V2, source_stats) %>% 
-      bind_rows() %>% 
-      filter(cor == unique(cor)) %>% 
-      mutate(sources = str_c(source1, ", ", source2))
-    
-    # Correlations
-    plott <- source_cor %>% 
-      ggplot() +
-      geom_bar(aes(x = sources,  y = coef, fill = sources, color = sources), position = "dodge", alpha = 0.5, stat = "identity") +
-      geom_errorbar(aes(x = sources, ymin = min, ymax = max, color = sources), position = "dodge") +
-      theme_classic()
-    
-    plott
   })
   
   
