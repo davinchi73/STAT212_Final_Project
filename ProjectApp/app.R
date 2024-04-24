@@ -273,7 +273,8 @@ server <- function(input, output) {
                                      "IGDB Userscore", 
                                      "Metacritic Userscore")),
              selectInput("genre_select", "Select game genre", 
-                         choices = c("Adventure", 
+                         choices = c("All",
+                                     "Adventure", 
                                      "Casual", 
                                      "Action",
                                      "Racing",
@@ -283,8 +284,8 @@ server <- function(input, output) {
              sliderInput("price_select",
                          "Price parameter",
                          min = 0,
-                         max = 70,
-                         value = 35)
+                         max = max(steamDataGenres$full_price),
+                         value = 50)
       ),
       column(6,
              tags$div(
@@ -317,9 +318,18 @@ server <- function(input, output) {
     
     plot <- NULL
     
-    cleanData <- steamDataGenres %>% 
-      select(full_price, !!sym(input$genre_select), !!sym(titleholder)) %>%
-      filter(!is.na(!!sym(input$genre_select)), full_price <= input$price_select, !!sym(titleholder) <= 250)
+    if (input$genre_select == "All") {
+      
+      cleanData <- steamDataGenres %>% 
+        select(full_price, !!sym(titleholder)) %>%
+        filter(full_price <= input$price_select, !is.na(!!sym(titleholder) <= 250))
+      
+    } else {
+      
+      cleanData <- steamDataGenres %>% 
+        select(full_price, !!sym(input$genre_select), !!sym(titleholder)) %>%
+        filter(!is.na(!!sym(input$genre_select)), full_price <= input$price_select, !!sym(titleholder) <= 250)
+    }
     
     plot <- ggplot(cleanData) + 
       geom_point(aes(x = full_price, y = !!sym(titleholder))) +

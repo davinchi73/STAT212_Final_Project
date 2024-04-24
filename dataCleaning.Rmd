@@ -5,10 +5,14 @@ date: "2024-02-04"
 output: html_document
 ---
 
+
+# Knit
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+# Load Packages
 ```{r, warning = FALSE, message = FALSE}
 library(tidyverse)
 library(dplyr)
@@ -24,9 +28,9 @@ library(corrplot)
 library(RColorBrewer)
 ```
 
-```{r}
-# Code to convert json to CSV
 
+# Code to convert json to CSV
+```{r}
 # steam <- fromJSON("..\\data\\data_raw\\steam.jsonmdb", simplifyDataFrame = TRUE)
 # 
 # write.csv(steam, "..\\data\\data_clean\\steam.jsonmdb")
@@ -37,6 +41,8 @@ library(RColorBrewer)
 ```{r}
 steamData <- read_csv("../data/data_clean/steam.csv")
 ```
+
+
 # Overview of data
 ```{r}
 skim(steamData)
@@ -46,6 +52,7 @@ steamData %>% pull(platforms) %>% unique()
 1. Games limited to PC, Mac, and Linux
 2. Nearly 34,000 different developers!
 3. Data mostly complete aside from ratings - it would be good to see if this means that it is biased in any way
+
 
 # cleaning data
 ```{r}
@@ -58,6 +65,7 @@ steamDataClean <- steamData %>%
     filter(full_price <= 200) %>%  # Only 2 games with full_price > 199.99
   mutate(gfq_rating = gfq_rating*20)  # scales gfq_rating to be on the 0-100 scale
 ```
+
 
 # write this data to csv
 ```{r}
@@ -91,10 +99,12 @@ steamDataGenres <- steamDataClean %>%
   
 ```
 
+
 # wider data csv
 ```{r}
 # write.csv(steamDataGenres, file = "../data/data_clean/steamDataGenres.csv", row.names = FALSE)
 ```
+
 
 # Data Exploration
 ```{r}
@@ -118,6 +128,7 @@ ggplot(steamDataDevelopers) +
   theme_classic() +
   labs(y = "Price", x = "Developer Size")
 ```
+
 
 # Devinn's Chunk
 ```{r, fig.width = 15}
@@ -198,7 +209,6 @@ plot_titlem <- ggdraw() +
 
 ggarrange(plot_titlem, MetacriticPlot, nrow = 2, rel_heights = c(0.1, 0.9), heights = c(0.1, 0.9))
 ```
-
 
 
 # Chris's Chunk
@@ -288,6 +298,7 @@ pop_price_genre %>%
     geom_errorbar(aes(x = genre, ymin = min, ymax = max, color = source), position = "dodge") +
     theme_classic()
 ```
+
 
 # Correlation of different games
 ```{r}
