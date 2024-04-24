@@ -299,6 +299,11 @@ pop_price_genre %>%
     theme_classic()
 ```
 
+#
+```{r}
+# write.csv(pop_price_genre, file = "../data/data_clean/pop_price_genre.csv", row.names = FALSE)
+```
+
 
 # Correlation of different games
 ```{r}
@@ -340,6 +345,12 @@ source_cor %>%
 ```
 
 
+# correlations csv
+```{r}
+# write.csv(source_cor, file = "../data/data_clean/source_cor.csv", row.names = FALSE)
+```
+
+
 # Final Visualizations
 
 # Density plot of prices
@@ -368,6 +379,13 @@ ggplot(avg_price) +
   theme_classic()
 ```
 
+
+# avg price csv
+```{r}
+# write.csv(avg_price, file = "../data/data_clean/avg_price.csv", row.names = FALSE)
+```
+
+
 ```{r}
 # Coefficients
 pop_price_genre %>% 
@@ -377,7 +395,9 @@ pop_price_genre %>%
     geom_errorbar(aes(x = genre, ymin = min, ymax = max, color = source), position = "dodge") +
     labs(x = "Genre") +
     theme_classic()
+
 ```
+
 # Correlation matrix
 ```{r}
 correlations <- steamDataGenres %>% 
@@ -393,6 +413,14 @@ correlations <- steamDataGenres %>%
 
 corrplot(correlations, method = "number", order = "hclust", tl.col = "black", tl.srt = 45)
 ```
+
+
+
+# correlations csv
+```{r}
+# write.csv(correlations, file = "../data/data_clean/correlations.csv", row.names = FALSE)
+```
+
 
 # Score averages
 ```{r}
@@ -410,6 +438,16 @@ ggplot(score_avg) +
   theme_classic() +
   scale_fill_manual(values = c("#325974", "#67C1F5"))
 ```
+
+
+
+# score av save
+```{r}
+# write.csv(score_avg, file = "../data/data_clean/score_avg.csv", row.names = FALSE)
+```
+
+
+
 
 ```{r}
 sessionInfo()
