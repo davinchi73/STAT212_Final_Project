@@ -1,0 +1,272 @@
+---
+title: "Plotting Final"
+author: "Devinn Chi and Chris Lohmeier"
+date: "2024-02-04"
+output: html_document
+---
+
+
+# Knit
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Load Packages
+```{r, warning = FALSE, message = FALSE}
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(jsonlite)
+library(skimr)
+library(lubridate)
+library(ggpubr)
+library(cowplot)
+library(broom)
+library(gtools)
+library(corrplot)
+library(RColorBrewer)
+```
+
+
+# reading in all data from csvs
+```{r}
+steamData <- read_csv("../data/data_clean/steam.csv")
+steamDataClean <- read_csv("../data/data_clean/steamDataClean.csv")
+steamDataGenres <- read_csv("../data/data_clean/steamDataGenres.csv")
+steamDataDevelopers <- read_csv("../data/data_clean/steamDataDevelopers.csv")
+source_cor <- read_csv("../data/data_clean/source_cor.csv")
+avg_price <- read_csv("../data/data_clean/avg_price.csv")
+# correlations <- read_csv("../data/data_clean/correlations.csv")
+score_avg <- read_csv("../data/data_clean/score_avg.csv")
+pop_price_genre <- read_csv("../data/data_clean/pop_price_genre.csv")
+```
+
+
+# Functions
+```{r}
+# custom theme for each graph
+customTheme <- theme_minimal() +
+  theme(
+    text = element_text(size = 12),
+    plot.title = element_text(face = "bold", size = 12),
+    axis.title = element_text(face = "bold"),
+    legend.position = "bottom"
+  )
+
+# function to make a singular price to rating plot
+makPtoGPlot <- function(xlab, ylab, titl, genreVar, popularityVar, data) {
+  cleanData <- data %>% 
+    select(full_price, !!sym(genreVar), !!sym(popularityVar)) %>%
+    filter(!is.na(!!sym(genreVar)), full_price <= 70, !!sym(popularityVar) <= 250)
+  
+  ggplot(cleanData) + 
+  geom_point(aes(x = full_price, y = !!sym(popularityVar))) +
+  stat_smooth(aes(x = full_price, y = !!sym(popularityVar)), method = "lm", se = TRUE) +
+  labs(title = titl, x = xlab, y = ylab) + 
+  customTheme
+}
+```
+
+
+# PLOTS START HERE -----------------------------------------------------------------------------------------------------------------------------
+
+
+# developers plot, size to price and count
+```{r}
+steamDataDevelopers %>% 
+  group_by(developers) %>% 
+  summarize(developer_size = n()) %>% 
+  arrange(desc(developer_size))
+
+ggplot(steamDataDevelopers) +
+  geom_histogram(aes(x = developer_size))
+
+ggplot(steamDataDevelopers) +
+  geom_point(aes(x = developer_size, y = full_price)) +
+  geom_smooth(aes(x = developer_size, y = full_price), method = "lm", se = FALSE) +
+  theme_classic() +
+  labs(y = "Price", x = "Developer Size")
+```
+
+
+# price to rating plots, 3 grids of plots, one for each user rating metric
+```{r}
+# IGDB popularity
+adv_plot <- makPtoGPlot("Price", "Popularity", "Adventure", "Adventure", "igdb_uscore", steamDataGenres)
+cas_plot <- makPtoGPlot("Price", "Popularity", "Casual", "Casual", "igdb_uscore", steamDataGenres)
+act_plot <- makPtoGPlot("Price", "Popularity", "Action", "Action", "igdb_uscore", steamDataGenres)
+rac_plot <- makPtoGPlot("Price", "Popularity", "Racing", "Racing",  "igdb_uscore",steamDataGenres)
+ind_plot <- makPtoGPlot("Price", "Popularity", "Indie", "Indie",  "igdb_uscore",steamDataGenres)
+RPG_plot <- makPtoGPlot("Price", "Popularity", "RPG", "RPG",  "igdb_uscore",steamDataGenres)
+sim_plot <- makPtoGPlot("Price", "Popularity", "Simulation", "Simulation", "igdb_uscore", steamDataGenres)
+
+IGDBplot <- ggarrange(adv_plot, cas_plot, act_plot, rac_plot, ind_plot, RPG_plot, sim_plot, 
+          ncol = 3, nrow = 3, common.legend = TRUE) 
+
+plot_title <- ggdraw() +
+  draw_label("Price to Popularity by Genre (IGDB)", fontface = 'bold', size = 14)
+
+ggarrange(plot_title, IGDBplot, nrow = 2, rel_heights = c(0.1, 0.9), heights = c(0.1, 0.9))
+
+
+
+# Steam UScore 
+adv_plotS <- makPtoGPlot("Price", "Popularity", "Adventure", "Adventure", "store_uscore", steamDataGenres)
+cas_plotS <- makPtoGPlot("Price", "Popularity", "Casual", "Casual", "store_uscore", steamDataGenres)
+act_plotS <- makPtoGPlot("Price", "Popularity", "Action", "Action", "store_uscore", steamDataGenres)
+rac_plotS <- makPtoGPlot("Price", "Popularity", "Racing", "Racing",  "store_uscore",steamDataGenres)
+ind_plotS <- makPtoGPlot("Price", "Popularity", "Indie", "Indie",  "store_uscore",steamDataGenres)
+RPG_plotS <- makPtoGPlot("Price", "Popularity", "RPG", "RPG",  "store_uscore",steamDataGenres)
+sim_plotS <- makPtoGPlot("Price", "Popularity", "Simulation", "Simulation", "store_uscore", steamDataGenres)
+
+steamPlot <- ggarrange(adv_plotS, cas_plotS, act_plotS, rac_plotS, ind_plotS, RPG_plotS, sim_plotS, 
+          ncol = 3, nrow = 3, common.legend = TRUE)
+
+plot_titles <- ggdraw() +
+  draw_label("Price to Popularity by Genre (Steam User Score)", fontface = 'bold', size = 14)
+
+ggarrange(plot_titles, steamPlot, nrow = 2, rel_heights = c(0.1, 0.9), heights = c(0.1, 0.9))
+
+
+
+# Metacritic User Score
+adv_plotM <- makPtoGPlot("Price", "Popularity", "Adventure", "Adventure", "meta_uscore", steamDataGenres)
+cas_plotM <- makPtoGPlot("Price", "Popularity", "Casual", "Casual", "meta_uscore", steamDataGenres)
+act_plotM <- makPtoGPlot("Price", "Popularity", "Action", "Action", "meta_uscore", steamDataGenres)
+rac_plotM <- makPtoGPlot("Price", "Popularity", "Racing", "Racing",  "meta_uscore",steamDataGenres)
+ind_plotM <- makPtoGPlot("Price", "Popularity", "Indie", "Indie",  "meta_uscore",steamDataGenres)
+RPG_plotM <- makPtoGPlot("Price", "Popularity", "RPG", "RPG",  "meta_uscore",steamDataGenres)
+sim_plotM <- makPtoGPlot("Price", "Popularity", "Simulation", "Simulation", "meta_uscore", steamDataGenres)
+
+MetacriticPlot <- ggarrange(adv_plotM, cas_plotM, act_plotM, rac_plotM, ind_plotM, RPG_plotM, sim_plotM, 
+          ncol = 3, nrow = 3, common.legend = TRUE)
+
+plot_titlem <- ggdraw() +
+  draw_label("Price to Popularity by Genre (MetaCritic User Score)", fontface = 'bold', size = 14)
+
+ggarrange(plot_titlem, MetacriticPlot, nrow = 2, rel_heights = c(0.1, 0.9), heights = c(0.1, 0.9))
+```
+
+
+# plot for platform/time exploration
+```{r}
+ggplot(steamDataClean) + 
+  geom_boxplot(aes(x = platforms, y = full_price)) + 
+  scale_y_continuous(limits = c(0, 50))
+
+steamDataClean %>%  
+  mutate(published_store = ymd(published_store)) %>%
+  mutate(year = year(published_store)) %>% 
+  ggplot() +
+    geom_boxplot(aes(x = year, y = full_price, group = year))
+```
+
+
+# plotting average dev size
+```{r}
+steamDataDevelopers %>% 
+  group_by(size_cat) %>% 
+  summarize(mean = mean(full_price)) %>% 
+ggplot() +
+  geom_bar(aes(y = mean, x = size_cat), stat = "identity")
+```
+
+
+# plots for correlations and coefficients
+```{r}
+# Determines the order of genres based on average cor
+pop_price_genre %>% 
+  group_by(genre) %>% 
+  summarize(avg = mean(cor)) %>% 
+  arrange(avg)
+
+# Correlations
+pop_price_genre %>% 
+  mutate(genre = factor(genre, levels = c("Racing", "Adventure", "Casual", "Indie", "RPG", "Action", "Simulation"))) %>% 
+  ggplot() +
+    geom_bar(aes(x = genre, y = cor, fill = source, color = source), position = "dodge", alpha = 0.5, stat = "identity") +
+  theme_classic()
+
+# Coefficients
+pop_price_genre %>% 
+  mutate(genre = factor(genre, levels = c("Racing", "Adventure", "Casual", "Indie", "RPG", "Action", "Simulation"))) %>% 
+  ggplot() +
+    geom_bar(aes(x = genre, y = coef, fill = source, color = source), position = "dodge", alpha = 0.5, stat = "identity") +
+    geom_errorbar(aes(x = genre, ymin = min, ymax = max, color = source), position = "dodge") +
+    theme_classic()
+```
+
+
+# Correlations plot
+```{r}
+# Correlations
+source_cor %>% 
+  ggplot() +
+    geom_bar(aes(x = sources,  y = coef, fill = sources, color = sources), position = "dodge", alpha = 0.5, stat = "identity") +
+    geom_errorbar(aes(x = sources, ymin = min, ymax = max, color = sources), position = "dodge") +
+    theme_classic()
+```
+
+
+# Density plot of prices
+```{r}
+steamDataClean %>% 
+ggplot() +
+  geom_density(aes(x = full_price), fill = "#C5C3C0") +
+  labs(x = "Price of Game (USD, excluding discounts)", y = "Proportion of Games") +
+  theme_classic()
+```
+
+
+# plot for price to year
+```{r}
+ggplot(avg_price) +
+  geom_bar(aes(x = year, y = avg_price/cases, fill = cases), stat = "identity") +
+  #geom_text(aes(x = year, y = avg_price, label = cases), vjust = -.5) +
+  labs(y = "Average Price (USD)", fill = "# Games Published", x = "Year Published") +
+  scale_fill_gradient(high = "#4C6B22", low = "#D2E885") +
+  theme_classic()
+```
+
+
+# coefficients plot
+```{r}
+pop_price_genre %>% 
+  mutate(genre = factor(genre, levels = c("Racing", "Adventure", "Casual", "Indie", "RPG", "Action", "Simulation"))) %>% 
+  ggplot() +
+    geom_bar(aes(x = genre, y = coef, fill = source, color = source), position = "dodge", alpha = 0.5, stat = "identity") +
+    geom_errorbar(aes(x = genre, ymin = min, ymax = max, color = source), position = "dodge") +
+    labs(x = "Genre") +
+    theme_classic()
+```
+
+
+# correlation matrix
+```{r}
+# chunk would not run with correlations in a csv file
+correlations <- steamDataGenres %>% 
+  select("igdb_score", "meta_score", "igdb_uscore", "meta_uscore", "store_uscore", "gfq_rating") %>%
+  rename("IGDB" = igdb_score, 
+         "Metacritic" = meta_score, 
+         "IGDB Users" = igdb_uscore, 
+         "Metacritic Users" = meta_uscore, 
+         "Steam Users" = store_uscore,
+         "GameFAQs" = gfq_rating) %>% 
+  drop_na() %>% 
+  cor()
+
+corrplot(correlations, method = "number", order = "hclust", tl.col = "black", tl.srt = 45)
+```
+
+
+# plots for score averages
+```{r}
+ggplot(score_avg) +
+  geom_bar(aes(x = score_name, y = avg, fill = score_type), stat = "identity") +
+  facet_wrap(~source, scales = "free_x") +
+  labs(y = "Average Rating", x = "", fill = "Score Type") +
+  theme_classic() +
+  scale_fill_manual(values = c("#325974", "#67C1F5"))
+```
+
