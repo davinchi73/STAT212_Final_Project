@@ -32,54 +32,6 @@ library(RColorBrewer)
 # CLEANING DATA START ----------------------------------------------------------------------------------------------------------------------------
 
 
-# functions
-
-## genre stats
-```{r}
-genre_stats <- function(metric, source, genre) {
-  data <- steamDataGenres %>%
-    filter(genre == genre) %>%
-    drop_na(any_of(c(genre, source, metric))) %>% 
-    select(any_of(c(source, metric)))
-  
-  mod <- lm(as.formula(str_c(metric, " ~ ", source)), data)
-  
-  stats <- list(
-    genre = genre,
-    source = source,
-    coef = coef(mod)[2],
-    max = confint(mod)[source, "97.5 %"],
-    min = confint(mod)[source, "2.5 %"],
-    cor = cor(data)[source, metric]
-  )
-  
-  return(stats)
-}
-```
-
-## source stats
-```{r}
-source_stats <- function(source1, source2) {
-  data <- steamDataGenres %>% 
-    select(any_of(c(source1, source2))) %>% 
-    drop_na(any_of(c(source1, source2)))
-  
-  mod <- lm(as.formula(str_c(source1, " ~ ", source2)), data)
-  
-  stats <- list(
-    source1 = source1,
-    source2 = source2,
-    coef = coef(mod)[2],
-    max = confint(mod)[source2, "97.5 %"],
-    min = confint(mod)[source2, "2.5 %"],
-    cor = cor(data)[source2, source1]
-  )
-  
-  return(stats)
-}
-```
-
-
 # Code to convert json to CSV
 ```{r}
 # steam <- fromJSON("..\\data\\data_raw\\steam.jsonmdb", simplifyDataFrame = TRUE)
@@ -134,6 +86,59 @@ steamDataDevelopers <- steamDataClean %>%
   ungroup() %>% 
   mutate(size_cat = cut(developer_size, breaks = 2))
 ```
+
+
+#---------------------
+
+# functions
+
+## genre stats
+```{r}
+genre_stats <- function(metric, source, genre) {
+  data <- steamDataGenres %>%
+    filter(genre == genre) %>%
+    drop_na(any_of(c(genre, source, metric))) %>% 
+    select(any_of(c(source, metric)))
+  
+  mod <- lm(as.formula(str_c(metric, " ~ ", source)), data)
+  
+  stats <- list(
+    genre = genre,
+    source = source,
+    coef = coef(mod)[2],
+    max = confint(mod)[source, "97.5 %"],
+    min = confint(mod)[source, "2.5 %"],
+    cor = cor(data)[source, metric]
+  )
+  
+  return(stats)
+}
+```
+
+
+## source stats
+```{r}
+source_stats <- function(source1, source2) {
+  data <- steamDataGenres %>% 
+    select(any_of(c(source1, source2))) %>% 
+    drop_na(any_of(c(source1, source2)))
+  
+  mod <- lm(as.formula(str_c(source1, " ~ ", source2)), data)
+  
+  stats <- list(
+    source1 = source1,
+    source2 = source2,
+    coef = coef(mod)[2],
+    max = confint(mod)[source2, "97.5 %"],
+    min = confint(mod)[source2, "2.5 %"],
+    cor = cor(data)[source2, source1]
+  )
+  
+  return(stats)
+}
+```
+
+#------------------
 
 
 # source correlation
