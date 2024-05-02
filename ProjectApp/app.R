@@ -214,10 +214,15 @@ server <- function(input, output) {
                
                ### 
                tags$h2("Ethics"),
-               tags$p("There are not a huge amount of ethical considerations that we had to make for this project. A few of the main 
-                      considerations were already mentioned, such as possible manipulation of statistics and such. When thinking about
-                      considerations of data acquisition, our data comes from a fairly large company which operates mainly online, so we do not 
-                      believe that much is needed to be considered ethically."),
+               tags$p("Our investigation deals with factors that influence the price and overall sucess of video games. This affects three 
+                      main players: video game developers, video game players, and middlemen like Steam. The data we found is gathered from
+                      Steam, which has an incentive to increase sales and profits of the video games it sells. The possibility that Steam isn't
+                      fully transparent with the data it shares must be considered. At the same, this data was gathered by a third-party source, 
+                      which might have different incentives. One of the main problems with our investigation is that there is no reliable data 
+                      on video game popularity that we could find. This makes sense - video game developers and Steam want to make their video
+                      games seem like quality products that stand apart from other games. However, this ignores the vested interest of video game
+                      players, who currently don't have a objective standard with which they can evaluate the quality of games before they buy
+                      them."),
                
                tags$hr(),
                
