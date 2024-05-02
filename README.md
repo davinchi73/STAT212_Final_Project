@@ -1,3 +1,6 @@
+CLICK THIS LINK TO VIEW SHINY APP HOSTED ON SHINYAPPS.io
+* https://devinnhostsstuffonlineyay.shinyapps.io/Chris-Devinn/ *
+
 **About our project**
 
 Our project is focused on one of the largest sources of creative output of the 21st century: video games. Video games frequently employ detailed narratives, sophisticated and challenging gameplay, and can connect with profound elements of the human psyche. We’ve decided to look at trends in video games as a way to assess what draws people to particular games.
